@@ -12,8 +12,10 @@
 ## Preconditions
 Phase 1 merged: data layer, modules, `/health`, logging live.
 
-## Decisions you must have from me before Stage 1 (spec §13)
-- **Launch provider + fallback provider.** **Economics model** (platform-paid vs BYO-key). If I haven't given these, **STOP and ask** — do not pick them yourself.
+## Settled decisions (implement as fact — do NOT re-litigate)
+- **Launch provider: Google Gemini 3.5 Flash** (single provider). Use its **native structured output (JSON schema)** and **context caching**. 1M context; ~$1.50 in / $9.00 out per 1M, ~$0.15/1M cached input.
+- **Fallback provider: deferred.** Wire **only Gemini** now, but build the gateway + adapter registry so a second provider can be added later by config (interface ready, not implemented).
+- **Economics: platform-paid + low free quota; BYO-key on paid tiers** (BYO-key plumbing lands in Phase 6 — here just don't preclude it).
 
 ## Goal
 Ship Workflow 1 (Enhance) and Workflow 2 (Refine) end to end on the API with provider-enforced structured output and a passing Promptfoo gate. Four modes: Improve, Enhance, Refine, Shorten.
@@ -25,7 +27,7 @@ Create and check out `phase-2/enhance-loop` off `main`.
 
 ## OPERATING PROTOCOL — follow exactly
 
-**STAGE 1 — SPAWN & WAIT (now).** Read context, confirm provider/economics decisions are given (else ask), create branch, spawn the three sub-agents below **in parallel**. Shared contracts (gateway interface + output schema in this packet) keep them independent. Each does ALL its own work + tests. **You do not implement, commit, or open anything.** **STOP and WAIT** until `all done`. Do not poll.
+**STAGE 1 — SPAWN & WAIT (now).** Read context (provider/economics decisions are settled above — Gemini 3.5 Flash, no fallback yet), create branch, spawn the three sub-agents below **in parallel**. Shared contracts (gateway interface + output schema in this packet) keep them independent. Each does ALL its own work + tests. **You do not implement, commit, or open anything.** **STOP and WAIT** until `all done`. Do not poll.
 
 **STAGE 2 — INTEGRATE & TEST (after `all done`).** Wire glue only. Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and the **Promptfoo eval gate** `pnpm eval`. Fix failures. **No merge of prompt changes unless `pnpm eval` is green.** Verify EXIT GATE. Commit small/conventional.
 
@@ -50,9 +52,9 @@ Create and check out `phase-2/enhance-loop` off `main`.
 - **Promptfoo regression suite** covering all four modes + every few-shot; wire it into the `pnpm eval` CI job (replace the Phase 0 stub). Suite must assert schema-validity and mode behaviors.
 
 ### Agent B — `builder`: LLM gateway + adapter registry + reliability
-- Thin gateway over the **launch provider** (designed for a 2nd fallback provider). Provider-native structured outputs.
+- Thin gateway over **Gemini 3.5 Flash** using its native structured output + context caching. Build the interface + adapter registry so a **second provider can be added later by config** (do not implement one now).
 - **Data-driven model/tool adapter registry** (config, not hardcoded classes) — add/retire a model = config change.
-- Reliability path (spec §6.10): one retry → **labeled** fallback model → graceful error preserving input.
+- Reliability path (spec §6.10), single-provider variant: one retry → optional **labeled** secondary/cheaper Gemini model → graceful error preserving input. (Cross-provider fallback is a later config add.)
 - Secret detection before send; output screening before return (spec §6.6) — reject meta-prompt dumps/empty.
 - Per-call observability: latency, tokens, cost, model, success → `operations`/traces.
 - Unit tests incl. forced-failure → fallback path; secret-detection; schema-invalid → retry.
@@ -68,7 +70,7 @@ Create and check out `phase-2/enhance-loop` off `main`.
 ## EXIT GATE
 - [ ] Enhance returns schema-valid output ≥98% across the eval set (`pnpm eval` green).
 - [ ] Refine returns 1–3 questions on thin input; placeholders when skipped.
-- [ ] Forced provider failure → labeled fallback (test-covered); input preserved on hard error.
+- [ ] Forced failure → retry → optional labeled secondary model → graceful error (test-covered); input preserved on hard error.
 - [ ] Secret detection + output screening test-covered; every call traced.
 - [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm eval` all green; p95 latency recorded.
 

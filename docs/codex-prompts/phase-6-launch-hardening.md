@@ -12,8 +12,9 @@
 ## Preconditions
 Phases 1–5 merged: full product loop + reuse layer live.
 
-## Decision you must have from me before Stage 1 (spec §13)
-- **Free-tier abuse policy** (per-user vs per-IP vs per-workspace + email verification). If not given, **STOP and ask.**
+## Settled decisions (implement as fact)
+- **Free-tier abuse policy: per-user limits + email verification.** No per-IP or per-workspace limits at launch.
+- **Economics:** platform-paid + low free quota; **BYO-key on paid tiers** (implement the BYO-key path here).
 
 ## Goal
 Make it operable, affordable, accessible, and safe to launch: billing/quotas, caching, observability, accessibility, security, privacy.
@@ -25,7 +26,7 @@ Create and check out `phase-6/launch-hardening` off `main`.
 
 ## OPERATING PROTOCOL — follow exactly
 
-**STAGE 1 — SPAWN & WAIT (now).** Confirm the abuse-policy decision (else ask), read context, create branch, spawn the four sub-agents below **in parallel**. Each does ALL its own work + tests. **You do not implement, commit, or open anything.** **STOP and WAIT** until `all done`. Do not poll.
+**STAGE 1 — SPAWN & WAIT (now).** Read context (abuse policy + economics are settled above), create branch, spawn the four sub-agents below **in parallel**. Each does ALL its own work + tests. **You do not implement, commit, or open anything.** **STOP and WAIT** until `all done`. Do not poll.
 
 **STAGE 2 — INTEGRATE & TEST (after `all done`).** Wire glue only — **including addressing Agent D's security/privacy findings** (fix them, or list any you defer with justification). Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm eval`, e2e. Fix failures. Verify EXIT GATE. Commit small/conventional.
 
@@ -38,7 +39,7 @@ Create and check out `phase-6/launch-hardening` off `main`.
 ## Sub-agents to spawn (4, parallel)
 
 ### Agent A — `builder`: billing, plans, quotas, privacy flows
-- Free/Pro/Advanced plans; **quota enforcement**; optional **BYO-key** on paid tiers; Settings/Billing backend.
+- Free/Pro/Advanced plans; **per-user quota enforcement**; **email verification** required to use the free tier (abuse policy); **BYO-key** on paid tiers; Settings/Billing backend.
 - **Data export** + **account deletion**; **soft-delete purge job** (grace-period expiry).
 - Tests: quota blocks at limit; BYO-key path; export completeness; deletion removes user-scoped data.
 

@@ -149,13 +149,13 @@ The cap is 6; we deliberately stay under it. Parallelism is used only for genuin
 
 ---
 
-## Open questions to resolve before/within Phase 2 & 6 (spec §13)
+## Resolved decisions (were spec §13 open questions)
 
-1. **Economics model** — platform-paid + low free quota vs. BYO-key vs. both (drives gateway design). *Recommendation: platform-paid low free quota + BYO-key on paid tiers.* → settle before Phase 2 gateway.
-2. **Launch provider + fallback** — which single provider first; which fallback. → settle before Phase 2.
-3. **Free-tier abuse policy** — per-user vs per-IP vs per-workspace + email verification. → settle within Phase 6.
+These are settled. Codex implements them as fact; it does not re-litigate.
 
-These are **Claude/operator decisions**, not Codex's. Codex implements the chosen answer.
+1. **Economics model — DECIDED:** platform-paid LLM calls with a **low free quota**, plus **bring-your-own-key (BYO-key)** on paid tiers. (Spec's recommended model.) → drives the Phase 2 gateway and Phase 6 billing.
+2. **Launch provider — DECIDED:** **Google Gemini 3.5 Flash** as the single launch provider. Verified fit (June 2026): 1M-token context, native **structured output (JSON schema)**, **context caching** (~90% cheaper on cache hits, $0.15 vs $1.50 / 1M input), pricing **$1.50 in / $9.00 out per 1M** — the "fast, cheaper default" the spec calls for. **Fallback provider is deferred/optional** — we explore a second provider later. The gateway is still *designed* for a second provider (adapter registry + interface ready), but only Gemini is wired at launch.
+3. **Free-tier abuse policy — DECIDED:** **per-user limits + email verification** at launch (no per-IP/per-workspace limits for now). → enforced in Phase 6.
 
 ---
 
