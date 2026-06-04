@@ -152,6 +152,32 @@ Every unit of work Claude hands to Codex uses this template. It is self-containe
 
 ---
 
+## 7b. Execution protocol for phase prompts (the spawn → wait → PR loop)
+
+Every phase prompt in [`codex-prompts/`](codex-prompts/) drives the **main Codex agent** through four hard-gated stages. The human operator controls the gates with two messages: **`all done`** and the **pasted review comments**.
+
+```
+STAGE 1  SPAWN & WAIT
+  main agent: read context → create branch → spawn the listed sub-agents in
+  parallel → each sub-agent does ALL its own work (code + unit tests) →
+  main agent STOPS and does nothing until the operator types: all done
+        │   ⟵ operator sends "all done"
+STAGE 2  INTEGRATE & TEST
+  main agent: inspect the tree the sub-agents produced → wire integration glue
+  only → run lint/typecheck/tests/eval gate → verify the phase EXIT GATE →
+  commit in small conventional commits
+STAGE 3  OPEN PR & STOP
+  main agent: push branch → open PR via gh → STOPS, waiting for review comments
+        │   ⟵ operator pastes the code-review agent's comments
+STAGE 4  ADDRESS REVIEW
+  main agent: address each comment in focused commits → push → report.
+  Does NOT merge. Flags any comment that conflicts with the spec.
+```
+
+**Why the gates exist.** The operator runs the code-review agent (e.g. `/review`) out of band and feeds its comments to the main agent in Stage 4 — so the phase prompts spawn **builders only**, never the reviewer. The main agent is an orchestrator + integrator: in Stage 1 it must not write feature code itself, and it must not begin Stage 2 work before the `all done` signal.
+
+---
+
 ## 8. Cost & safety guardrails
 
 - Sub-agents multiply token spend (each runs its own model+tools). Default to **fewer agents**; justify every parallel fan-out.
