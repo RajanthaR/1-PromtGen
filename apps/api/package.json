@@ -1,0 +1,20 @@
+{
+  "name": "@promptgen/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "@promptgen/config": "workspace:*",
+    "@promptgen/types": "workspace:*"
+  },
+  "devDependencies": {}
+}
