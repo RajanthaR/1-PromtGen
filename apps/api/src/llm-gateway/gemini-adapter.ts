@@ -53,7 +53,12 @@ export function createGeminiAdapter(options: { fetch?: FetchLike; timeoutMs?: nu
           );
         }
 
-        const payload = (await response.json()) as GeminiResponse;
+        const payload = (await response.json()) as unknown;
+
+        if (!isGeminiResponse(payload)) {
+          throw new LlmProviderError("invalid_response", "Gemini returned an invalid response payload.");
+        }
+
         const text = extractGeminiText(payload);
 
         if (!text.trim()) {
@@ -76,10 +81,14 @@ export function createGeminiAdapter(options: { fetch?: FetchLike; timeoutMs?: nu
         }
 
         if (error instanceof SyntaxError) {
-          throw new LlmProviderError("invalid_json", "Gemini returned invalid structured JSON.");
+          throw new LlmProviderError("invalid_json", "Gemini returned invalid structured JSON.", true, {
+            cause: error,
+          });
         }
 
-        throw new LlmProviderError("gemini_request_failed", "Gemini request failed.");
+        throw new LlmProviderError("gemini_request_failed", "Gemini request failed.", true, {
+          cause: error,
+        });
       } finally {
         clearTimeout(timeout);
       }
@@ -120,3 +129,6 @@ function extractGeminiText(payload: GeminiResponse): string {
   return parts.map((part) => part.text ?? "").join("");
 }
 
+function isGeminiResponse(value: unknown): value is GeminiResponse {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

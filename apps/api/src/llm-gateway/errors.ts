@@ -10,8 +10,9 @@ export class LlmGatewayError extends Error {
     public readonly code: LlmGatewayErrorCode,
     message: string,
     public readonly retryable = false,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
     this.name = "LlmGatewayError";
   }
 }
@@ -21,8 +22,9 @@ export class LlmProviderError extends Error {
     public readonly code: string,
     message: string,
     public readonly retryable = true,
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
     this.name = "LlmProviderError";
   }
 }
@@ -38,4 +40,3 @@ export function toSafeErrorCode(error: unknown): string {
 
   return "unknown_error";
 }
-

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { defaultLlmGatewayRegistry } from "@promptgen/config/llm";
 
 import { LlmProviderError } from "./errors";
-import { buildGeminiRequestBody } from "./gemini-adapter";
+import { buildGeminiRequestBody, createGeminiAdapter } from "./gemini-adapter";
 import { createLlmGateway } from "./gateway";
 import { createLlmAdapterRegistry } from "./registry";
 import type {
@@ -176,6 +176,51 @@ describe("llm gateway", () => {
           },
         },
       },
+    });
+  });
+
+  it("preserves the final provider failure as the gateway error cause", async () => {
+    const providerError = new LlmProviderError("provider_down", "primary failed");
+    const adapter = new ScriptedGeminiAdapter([
+      () => {
+        throw providerError;
+      },
+      () => {
+        throw providerError;
+      },
+      () => {
+        throw providerError;
+      },
+    ]);
+    const gateway = createGateway(adapter);
+
+    await expect(gateway.enhance(baseInput())).rejects.toMatchObject({
+      cause: providerError,
+      code: "provider_unavailable",
+    });
+  });
+
+  it("rejects non-object Gemini payloads before reading nested fields", async () => {
+    const adapter = createGeminiAdapter({
+      fetch: async () =>
+        new Response("null", {
+          headers: {
+            "content-type": "application/json",
+          },
+          status: 200,
+        }),
+    });
+
+    await expect(
+      adapter.generate({
+        apiKey: "test-key",
+        model: defaultLlmGatewayRegistry.models[0]!,
+        staticParts: ["static prefix"],
+        variablePart: "variable user input",
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_response",
+      message: "Gemini returned an invalid response payload.",
     });
   });
 });

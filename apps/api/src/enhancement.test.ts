@@ -206,6 +206,26 @@ describe("enhancement endpoints", () => {
     }
   });
 
+  it("rejects request bodies over 1MB without calling the gateway", async () => {
+    const gateway = new FakeGateway();
+    const server = await listen({ gateway });
+
+    try {
+      const response = await postJson(server, "/enhance/enhance", {
+        raw_prompt: "x".repeat(1024 * 1024),
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toMatchObject({
+        error: "invalid_request",
+        message: "Request body exceeds maximum size limit of 1MB.",
+      });
+      expect(gateway.requests).toEqual([]);
+    } finally {
+      await close(server);
+    }
+  });
+
   it("validates canonical enhancement output server-side", () => {
     expect(validateEnhancementOutput(createValidOutput("enhance"))).toMatchObject({
       valid: true,

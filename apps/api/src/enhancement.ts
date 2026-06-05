@@ -113,6 +113,8 @@ const taskVerbs = new Set([
   "write",
 ]);
 
+const maxRequestBodyBytes = 1024 * 1024;
+
 export function isEnhancementMode(value: string): value is EnhancementMode {
   return enhancementModes.includes(value as EnhancementMode);
 }
@@ -396,7 +398,16 @@ function applySkippedClarificationPlaceholders(
 async function parseEnhancementRequest(
   request: IncomingMessage,
 ): Promise<EnhancementHttpRequest | { error: string; message: string; raw_prompt?: string }> {
-  const body = await readJsonBody(request);
+  let body: unknown;
+
+  try {
+    body = await readJsonBody(request);
+  } catch (error) {
+    return {
+      error: "invalid_request",
+      message: error instanceof Error ? error.message : "Failed to read request body.",
+    };
+  }
 
   if (!isRecord(body)) {
     return { error: "invalid_request", message: "Request body must be a JSON object." };
@@ -464,9 +475,17 @@ async function parseEnhancementRequest(
 
 async function readJsonBody(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
+  let totalLength = 0;
 
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    totalLength += buffer.length;
+
+    if (totalLength > maxRequestBodyBytes) {
+      throw new Error("Request body exceeds maximum size limit of 1MB.");
+    }
+
+    chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString("utf8");

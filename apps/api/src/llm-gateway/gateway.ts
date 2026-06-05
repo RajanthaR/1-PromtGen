@@ -131,6 +131,7 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
           : "provider_unavailable",
         "Prompt enhancement failed. Preserve the original input and offer Retry.",
         true,
+        { cause: lastError },
       );
     },
   };
