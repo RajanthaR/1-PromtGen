@@ -8,6 +8,8 @@
     "pnpm": ">=10.33.0"
   },
   "scripts": {
+    "db:migrate": "pnpm --filter @promptgen/db db:migrate",
+    "db:reset": "pnpm --filter @promptgen/db db:reset",
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
