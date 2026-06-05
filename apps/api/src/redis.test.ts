@@ -25,27 +25,37 @@ describe("redis health probe", () => {
         calls.push("quit");
       },
     });
+    const probe = createRedisHealthProbe({ redisUrl: "redis://localhost:6379" }, factory);
 
-    await expect(
-      createRedisHealthProbe({ redisUrl: "redis://localhost:6379" }, factory).check(),
-    ).resolves.toEqual({
+    await expect(probe.check()).resolves.toEqual({
       name: "redis",
       state: "ok",
       configured: true,
     });
-    expect(calls).toEqual(["connect", "ping", "quit"]);
+    await expect(probe.check()).resolves.toEqual({
+      name: "redis",
+      state: "ok",
+      configured: true,
+    });
+    expect(calls).toEqual(["connect", "ping", "ping"]);
   });
 
   it("reports configured Redis as offline when ping fails", async () => {
+    const calls: string[] = [];
     const factory: RedisHealthClientFactory = () => ({
       async connect() {
+        calls.push("connect");
         return undefined;
       },
       async ping() {
+        calls.push("ping");
         throw new Error("Redis unavailable.");
       },
       async quit() {
         return undefined;
+      },
+      destroy() {
+        calls.push("destroy");
       },
     });
 
@@ -56,5 +66,6 @@ describe("redis health probe", () => {
       state: "offline",
       configured: true,
     });
+    expect(calls).toEqual(["connect", "ping", "destroy"]);
   });
 });

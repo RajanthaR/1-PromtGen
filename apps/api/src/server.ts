@@ -44,9 +44,10 @@ export function createApiRequestHandler(options: {
 }): (request: IncomingMessage, response: ServerResponse) => void {
   const env = options.env ?? defaultEnv;
   const logger = options.logger ?? createJsonLogger();
+  const redis = options.redis ?? createRedisHealthProbe(env);
 
   return (request, response) => {
-    void handleApiRequest(request, response, env, logger, options.redis);
+    void handleApiRequest(request, response, env, logger, redis);
   };
 }
 

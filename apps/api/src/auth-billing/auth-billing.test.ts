@@ -44,6 +44,32 @@ describe("auth-billing service", () => {
     await expect(service.validateSession("session-email")).resolves.toBeNull();
   });
 
+  it("returns null for blank or expired sessions without deleting during validation", async () => {
+    const store = new InMemoryAuthBillingStore();
+    const service = createAuthBillingService(store, {
+      clock: () => new Date("2026-06-05T00:00:00.000Z"),
+    });
+
+    store.seedUser({
+      createdAt: new Date("2026-06-04T00:00:00.000Z"),
+      email: "expired@example.com",
+      id: "user-expired",
+      plan: "free",
+    });
+    store.seedSession({
+      createdAt: new Date("2026-06-04T00:00:00.000Z"),
+      expiresAt: new Date("2026-06-04T01:00:00.000Z"),
+      id: "session-expired",
+      userId: "user-expired",
+    });
+
+    await expect(service.validateSession("   ")).resolves.toBeNull();
+    await expect(service.validateSession("session-expired")).resolves.toBeNull();
+    await expect(store.findSessionById("session-expired")).resolves.toMatchObject({
+      id: "session-expired",
+    });
+  });
+
   it("creates a Google OAuth login session for a verified profile", async () => {
     const store = new InMemoryAuthBillingStore();
     const service = createAuthBillingService(store, {
@@ -180,6 +206,13 @@ describeWithDatabase("auth-billing Postgres store", () => {
         user: {
           email: "db-user@example.com",
         },
+      });
+
+      await expect(
+        new PostgresAuthBillingStore(db).updateUserProfile(session.user.id, {}),
+      ).resolves.toMatchObject({
+        email: "db-user@example.com",
+        id: session.user.id,
       });
 
       await expect(service.logout(session.id)).resolves.toBe(true);

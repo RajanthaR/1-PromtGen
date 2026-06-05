@@ -97,7 +97,10 @@ export const tags = pgTable(
     name: text("name").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [unique("tags_user_id_name_unique").on(table.userId, table.name)],
+  (table) => [
+    unique("tags_user_id_name_unique").on(table.userId, table.name),
+    index("tags_user_id_idx").on(table.userId),
+  ],
 );
 
 export const promptTags = pgTable(
@@ -126,22 +129,37 @@ export const contextSnippets = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("context_snippets_user_id_deleted_at_idx").on(table.userId, table.deletedAt)],
+  (table) => [
+    index("context_snippets_user_id_deleted_at_idx").on(table.userId, table.deletedAt),
+    index("context_snippets_fts_idx").using(
+      "gin",
+      sql`to_tsvector('english', ${table.title} || ' ' || ${table.body})`,
+    ),
+  ],
 );
 
-export const templates = pgTable("templates", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  title: text("title").notNull(),
-  category: text("category").notNull(),
-  description: text("description").notNull(),
-  body: text("body").notNull(),
-  variables: jsonb("variables").notNull().default([]),
-  tags: text("tags").array().notNull().default([]),
-  compatibleTools: text("compatible_tools").array().notNull().default([]),
-  difficulty: text("difficulty").notNull(),
-  isPublic: boolean("is_public").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const templates = pgTable(
+  "templates",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    category: text("category").notNull(),
+    description: text("description").notNull(),
+    body: text("body").notNull(),
+    variables: jsonb("variables").notNull().default([]),
+    tags: text("tags").array().notNull().default([]),
+    compatibleTools: text("compatible_tools").array().notNull().default([]),
+    difficulty: text("difficulty").notNull(),
+    isPublic: boolean("is_public").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("templates_fts_idx").using(
+      "gin",
+      sql`to_tsvector('english', ${table.title} || ' ' || ${table.description} || ' ' || ${table.body})`,
+    ),
+  ],
+);
 
 export const operations = pgTable(
   "operations",
@@ -202,6 +220,10 @@ export const promptsRelations = relations(prompts, ({ many, one }) => ({
     references: [users.id],
   }),
   versions: many(promptVersions),
+  currentVersion: one(promptVersions, {
+    fields: [prompts.currentVersionId],
+    references: [promptVersions.id],
+  }),
 }));
 
 export const promptVersionsRelations = relations(promptVersions, ({ one }) => ({

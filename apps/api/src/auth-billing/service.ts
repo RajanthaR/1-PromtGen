@@ -71,7 +71,12 @@ export function createAuthBillingService(
   }
 
   async function validateSession(sessionId: string): Promise<AuthSession | null> {
-    const normalizedSessionId = normalizeSessionId(sessionId);
+    const normalizedSessionId = sessionId.trim();
+
+    if (!normalizedSessionId) {
+      return null;
+    }
+
     const session = await store.findSessionById(normalizedSessionId);
 
     if (!session) {
@@ -79,14 +84,12 @@ export function createAuthBillingService(
     }
 
     if (session.expiresAt <= clock()) {
-      await store.deleteSession(session.id);
       return null;
     }
 
     const user = await store.findUserById(session.userId);
 
     if (!user) {
-      await store.deleteSession(session.id);
       return null;
     }
 

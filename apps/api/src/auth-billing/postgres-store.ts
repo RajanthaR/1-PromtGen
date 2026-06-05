@@ -93,12 +93,29 @@ export class PostgresAuthBillingStore implements AuthBillingStore {
   }
 
   async updateUserProfile(userId: string, input: UpdateUserProfileInput): Promise<AuthUser> {
+    const updateFields: Partial<typeof users.$inferInsert> = {};
+
+    if (input.avatarUrl !== undefined) {
+      updateFields.avatarUrl = input.avatarUrl;
+    }
+
+    if (input.name !== undefined) {
+      updateFields.name = input.name;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      const user = await this.findUserById(userId);
+
+      if (!user) {
+        throw new Error(`User ${userId} does not exist.`);
+      }
+
+      return user;
+    }
+
     const [user] = await this.db
       .update(users)
-      .set({
-        ...(input.avatarUrl ? { avatarUrl: input.avatarUrl } : {}),
-        ...(input.name ? { name: input.name } : {}),
-      })
+      .set(updateFields)
       .where(eq(users.id, userId))
       .returning();
 

@@ -35,6 +35,9 @@ export function createRedisHealthProbe(
   env: Pick<PromptGenEnv, "redisUrl">,
   clientFactory: RedisHealthClientFactory = createRedisClient,
 ): RedisHealthProbe {
+  let client: RedisHealthClient | null = null;
+  let connectPromise: Promise<unknown> | null = null;
+
   return {
     async check() {
       if (!env.redisUrl) {
@@ -45,10 +48,11 @@ export function createRedisHealthProbe(
         };
       }
 
-      const client = clientFactory(env.redisUrl);
+      client ??= clientFactory(env.redisUrl);
+      connectPromise ??= client.connect();
 
       try {
-        await client.connect();
+        await connectPromise;
         await client.ping();
 
         return {
@@ -57,22 +61,16 @@ export function createRedisHealthProbe(
           configured: true,
         };
       } catch {
+        client.destroy?.();
+        client = null;
+        connectPromise = null;
+
         return {
           name: "redis",
           state: "offline",
           configured: true,
         };
-      } finally {
-        await closeRedisClient(client);
       }
     },
   };
-}
-
-async function closeRedisClient(client: RedisHealthClient): Promise<void> {
-  try {
-    await client.quit();
-  } catch {
-    client.destroy?.();
-  }
 }
