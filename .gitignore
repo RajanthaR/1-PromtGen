@@ -1,15 +1,26 @@
+# OS and editor files
 .DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
 
 # Dependencies
 node_modules
 .pnpm-store
 
-# Build and test output
+# Build, cache, and test output
 .next
+out
 dist
 coverage
 .turbo
+.vercel
 *.tsbuildinfo
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Local environment files
 .env
