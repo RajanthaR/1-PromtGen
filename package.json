@@ -16,7 +16,7 @@
     "test": "turbo run test",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "eval": "echo \"Promptfoo evals are stubbed until Phase 2.\""
+    "eval": "pnpm exec promptfoo eval -c packages/prompt-engine/evals/promptfooconfig.yaml --no-cache"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -28,6 +28,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "promptfoo": "^0.121.14",
     "tsx": "^4.22.4",
     "turbo": "^2.9.16",
     "typescript": "^6.0.3",

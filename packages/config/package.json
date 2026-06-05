@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./env": "./src/env.ts",
+    "./llm": "./src/llm.ts",
     "./eslint": "./eslint.config.mjs",
     "./prettier": "./prettier.config.mjs"
   },

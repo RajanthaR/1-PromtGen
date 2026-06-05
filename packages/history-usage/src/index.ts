@@ -8,12 +8,12 @@ export interface PromptOperationRecord {
   mode: PromptOperationMode;
   targetModel: string;
   promptType: string;
-  structureScoreBefore: number;
-  structureScoreAfter: number;
-  tokens: number;
-  provider: string;
-  model: string;
-  latencyMs: number;
+  structureScoreBefore?: number;
+  structureScoreAfter?: number;
+  tokens?: number;
+  provider?: string;
+  model?: string;
+  latencyMs?: number;
   saved: boolean;
   thumbsFeedback?: "up" | "down";
   createdAt: Date;
@@ -25,12 +25,12 @@ export interface RecordPromptOperationInput {
   mode: PromptOperationMode;
   targetModel: string;
   promptType: string;
-  structureScoreBefore: number;
-  structureScoreAfter: number;
-  tokens: number;
-  provider: string;
-  model: string;
-  latencyMs: number;
+  structureScoreBefore?: number;
+  structureScoreAfter?: number;
+  tokens?: number;
+  provider?: string;
+  model?: string;
+  latencyMs?: number;
   saved: boolean;
   thumbsFeedback?: "up" | "down";
 }

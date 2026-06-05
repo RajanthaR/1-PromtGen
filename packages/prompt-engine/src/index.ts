@@ -1,4 +1,29 @@
-export type PromptEnhancementMode = "improve" | "enhance" | "shorten";
+export {
+  buildPromptEnginePrompt,
+  PROMPT_ENGINE_META_PROMPT_V2,
+  PROMPT_ENGINE_STATIC_PREFIX,
+  type BuildPromptEnginePromptInput,
+  type SelectedContextSnippet,
+} from "./prompts/meta-prompt-v2";
+export {
+  formatGoldenFewShotsForPrompt,
+  PROMPT_ENGINE_GOLDEN_FEW_SHOTS,
+  type PromptEngineGoldenFewShot,
+} from "./prompts/few-shots";
+export {
+  PROMPT_ENGINE_OUTPUT_FIELDS,
+  PROMPT_ENGINE_OUTPUT_SCHEMA,
+  validatePromptEngineOutput,
+  type PromptEngineJsonSchema,
+  type PromptEngineOutputField,
+  type PromptEngineSchemaValidationResult,
+  type PromptEngineStructuredOutput,
+  type PromptEnhancementMode,
+  type PromptTargetModel,
+  type PromptTone,
+} from "./schema";
+
+import type { PromptEnhancementMode, PromptEngineStructuredOutput } from "./schema";
 
 export interface PromptEngineRequest {
   userId: string;
@@ -10,11 +35,7 @@ export interface PromptEngineRequest {
 }
 
 export interface PromptEngineResult {
-  enhancedPrompt: string;
-  explanation: string;
-  diffSummary: string;
-  structureScoreBefore: number;
-  structureScoreAfter: number;
+  output: PromptEngineStructuredOutput;
   contextSnippetIdsUsed: string[];
 }
 

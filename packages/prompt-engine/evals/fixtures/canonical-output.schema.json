@@ -1,0 +1,94 @@
+{
+  "title": "PromptForgePromptEngineOutput",
+  "description": "Canonical flat structured output for PromptForge Studio prompt enhancement. Quality checklist fields are intentionally excluded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "needs_clarification",
+    "questions",
+    "enhanced_prompt",
+    "role",
+    "task",
+    "context",
+    "constraints",
+    "format",
+    "tone",
+    "success_criteria",
+    "explanation",
+    "added",
+    "removed",
+    "changed"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Short human-readable title for the enhanced prompt, based only on the user's provided intent."
+    },
+    "needs_clarification": {
+      "type": "boolean",
+      "description": "True only when refine mode needs more information before a strong rewrite can be produced."
+    },
+    "questions": {
+      "type": "array",
+      "description": "One to three specific clarification questions when needs_clarification is true; otherwise an empty array.",
+      "items": { "type": "string" },
+      "maxItems": 3
+    },
+    "enhanced_prompt": {
+      "type": "string",
+      "description": "The editable prompt the user can copy. Use an empty string only when clarification is required or the request is refused for safety."
+    },
+    "role": {
+      "type": "string",
+      "description": "The role/persona section to include in the enhanced prompt, or an empty string when clarification is required."
+    },
+    "task": {
+      "type": "string",
+      "description": "The concrete task the target model should perform, preserving the user's original intent."
+    },
+    "context": {
+      "type": "string",
+      "description": "Only the user-provided context and selected context snippets used by the enhanced prompt; never unselected context."
+    },
+    "constraints": {
+      "type": "array",
+      "description": "Explicit user constraints plus safe inferred structural constraints; use placeholders for unknown facts.",
+      "items": { "type": "string" }
+    },
+    "format": {
+      "type": "string",
+      "description": "Requested output format for the target model, such as bullets, table, email, checklist, or concise paragraph."
+    },
+    "tone": {
+      "type": "string",
+      "enum": ["neutral", "professional", "friendly", "concise", "persuasive", "technical"],
+      "description": "Best-fitting tone for the enhanced prompt. Choose one enum value; preserve any explicit user tone preference."
+    },
+    "success_criteria": {
+      "type": "array",
+      "description": "Observable criteria that define a useful target-model response to the enhanced prompt.",
+      "items": { "type": "string" }
+    },
+    "explanation": {
+      "type": "array",
+      "description": "Brief plain-language reasons explaining what changed and why.",
+      "items": { "type": "string" }
+    },
+    "added": {
+      "type": "array",
+      "description": "Prompt elements added to make the user's request clearer or more complete.",
+      "items": { "type": "string" }
+    },
+    "removed": {
+      "type": "array",
+      "description": "Prompt elements removed or compressed; empty when nothing was removed.",
+      "items": { "type": "string" }
+    },
+    "changed": {
+      "type": "array",
+      "description": "Prompt elements rewritten, reorganized, or made more specific.",
+      "items": { "type": "string" }
+    }
+  }
+}
