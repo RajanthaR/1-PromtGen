@@ -59,7 +59,8 @@ function parsePort(value: string): number {
 
 function parseUrl(value: string, name: string): string {
   try {
-    return new URL(value).toString().replace(/\/$/, "");
+    const urlString = value.includes("://") ? value : `http://${value}`;
+    return new URL(urlString).toString().replace(/\/$/, "");
   } catch {
     throw new Error(`${name} must be a valid URL.`);
   }

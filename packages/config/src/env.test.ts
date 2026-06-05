@@ -26,6 +26,14 @@ describe("loadPromptGenEnv", () => {
     });
   });
 
+  it("adds a default protocol when local app URLs omit one", () => {
+    expect(
+      loadPromptGenEnv({
+        NEXT_PUBLIC_APP_URL: "localhost:3000",
+      }).appUrl,
+    ).toBe("http://localhost:3000");
+  });
+
   it("rejects invalid ports early", () => {
     expect(() => loadPromptGenEnv({ API_PORT: "70000" })).toThrow(
       "API_PORT must be an integer between 1 and 65535.",
