@@ -1,0 +1,26 @@
+{
+  "name": "@promptgen/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./seed": "./src/seed.ts",
+    "./test-helpers": "./src/test-helpers.ts"
+  },
+  "scripts": {
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:reset": "tsx scripts/reset.ts",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
+  }
+}

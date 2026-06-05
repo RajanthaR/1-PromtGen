@@ -1,5 +1,5 @@
 {
-  "name": "@promptgen/api",
+  "name": "@promptgen/prompt-engine",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,16 +7,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --config ../../vitest.config.ts"
   },
-  "dependencies": {
-    "@promptgen/config": "workspace:*",
-    "@promptgen/db": "workspace:*",
-    "@promptgen/types": "workspace:*",
-    "drizzle-orm": "^0.45.2",
-    "redis": "^6.0.0"
-  }
+  "devDependencies": {}
 }
