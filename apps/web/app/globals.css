@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f7f4;
+  color: #1f2933;
+}
+
+main {
+  min-height: 100vh;
+}
