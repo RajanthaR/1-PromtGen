@@ -10,6 +10,10 @@ export function startPlaceholderApi(): ReturnType<typeof createServer> {
     response.end(JSON.stringify(createHealthPayload()));
   });
 
+  server.on("error", (error) => {
+    console.error(`Failed to start API server: ${error.message}`);
+  });
+
   server.listen(port, () => {
     console.info(`PromptForge API placeholder listening on port ${port}`);
   });
