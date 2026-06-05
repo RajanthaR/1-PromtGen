@@ -1,6 +1,8 @@
 import { loadPromptGenEnv, type PromptGenEnv } from "@promptgen/config/env";
 import { foundationSchemaVersion, type ServiceStatus } from "@promptgen/types";
 
+const defaultEnv = loadPromptGenEnv();
+
 export function createServiceStatus(): ServiceStatus {
   return {
     name: "api",
@@ -10,10 +12,10 @@ export function createServiceStatus(): ServiceStatus {
 }
 
 export function resolveApiPort(source?: Record<string, string | undefined>): number {
-  return loadPromptGenEnv(source).apiPort;
+  return source ? loadPromptGenEnv(source).apiPort : defaultEnv.apiPort;
 }
 
-export function createHealthPayload(env: PromptGenEnv = loadPromptGenEnv()): {
+export function createHealthPayload(env: PromptGenEnv = defaultEnv): {
   env: PromptGenEnv["nodeEnv"];
   port: number;
   service: ServiceStatus;
