@@ -1,26 +1,36 @@
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 
-import { createHealthPayload, resolveApiPort } from "./server";
+import { loadPromptGenEnv, type PromptGenEnv } from "@promptgen/config/env";
 
-export function startPlaceholderApi(): ReturnType<typeof createServer> {
-  const port = resolveApiPort();
-  const server = createServer((_request, response) => {
-    response.writeHead(200, { "content-type": "application/json" });
-    response.end(JSON.stringify(createHealthPayload()));
-  });
+import { createJsonLogger, type JsonLogger } from "./logger";
+import { createApiRequestHandler } from "./server";
+
+export function startApi(
+  options: { env?: PromptGenEnv; logger?: JsonLogger } = {},
+): ReturnType<typeof createServer> {
+  const env = options.env ?? loadPromptGenEnv();
+  const logger = options.logger ?? createJsonLogger();
+  const server = createServer(createApiRequestHandler({ env, logger }));
 
   server.on("error", (error) => {
-    console.error(`Failed to start API server: ${error.message}`);
+    logger.error("api.server_error", {
+      errorName: error.name,
+      errorMessage: error.message,
+    });
   });
 
-  server.listen(port, () => {
-    console.info(`PromptForge API placeholder listening on port ${port}`);
+  server.listen(env.apiPort, () => {
+    logger.info("api.started", {
+      port: env.apiPort,
+    });
   });
 
   return server;
 }
 
+export const startPlaceholderApi = startApi;
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  startPlaceholderApi();
+  startApi();
 }

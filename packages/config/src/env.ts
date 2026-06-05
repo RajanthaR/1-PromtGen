@@ -3,7 +3,10 @@ export type PromptGenNodeEnv = "development" | "test" | "production";
 export interface PromptGenEnv {
   apiPort: number;
   appUrl: string;
+  authSessionTtlSeconds: number;
   databaseUrl?: string;
+  googleOAuthClientId?: string;
+  googleOAuthClientSecret?: string;
   llmProviderApiKey?: string;
   nodeEnv: PromptGenNodeEnv;
   redisUrl?: string;
@@ -14,6 +17,7 @@ type EnvSource = Record<string, string | undefined>;
 const defaultEnv: PromptGenEnv = {
   apiPort: 4000,
   appUrl: "http://localhost:3000",
+  authSessionTtlSeconds: 60 * 60 * 24 * 30,
   nodeEnv: "development",
 };
 
@@ -21,14 +25,23 @@ export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv 
   const nodeEnv = parseNodeEnv(source.NODE_ENV);
   const appUrl = parseUrl(source.NEXT_PUBLIC_APP_URL ?? defaultEnv.appUrl, "NEXT_PUBLIC_APP_URL");
   const apiPort = parsePort(source.API_PORT ?? String(defaultEnv.apiPort));
+  const authSessionTtlSeconds = parsePositiveInteger(
+    source.AUTH_SESSION_TTL_SECONDS ?? String(defaultEnv.authSessionTtlSeconds),
+    "AUTH_SESSION_TTL_SECONDS",
+  );
   const databaseUrl = parseOptional(source.DATABASE_URL);
+  const googleOAuthClientId = parseOptional(source.GOOGLE_OAUTH_CLIENT_ID);
+  const googleOAuthClientSecret = parseOptionalSecret(source.GOOGLE_OAUTH_CLIENT_SECRET);
   const redisUrl = parseOptional(source.REDIS_URL);
   const llmProviderApiKey = parseOptionalSecret(source.LLM_PROVIDER_API_KEY);
 
   return {
     apiPort,
     appUrl,
+    authSessionTtlSeconds,
     ...(databaseUrl ? { databaseUrl } : {}),
+    ...(googleOAuthClientId ? { googleOAuthClientId } : {}),
+    ...(googleOAuthClientSecret ? { googleOAuthClientSecret } : {}),
     ...(llmProviderApiKey ? { llmProviderApiKey } : {}),
     nodeEnv,
     ...(redisUrl ? { redisUrl } : {}),
@@ -55,6 +68,16 @@ function parsePort(value: string): number {
   }
 
   return port;
+}
+
+function parsePositiveInteger(value: string, name: string): number {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+
+  return parsed;
 }
 
 function parseUrl(value: string, name: string): string {

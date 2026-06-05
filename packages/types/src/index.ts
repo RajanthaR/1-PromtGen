@@ -8,4 +8,23 @@ export interface ServiceStatus {
   version: string;
 }
 
+export type DependencyName = "redis";
+
+export type DependencyState = ServiceState | "not_configured";
+
+export interface DependencyStatus {
+  name: DependencyName;
+  state: DependencyState;
+  configured: boolean;
+}
+
+export interface HealthPayload {
+  env: "development" | "test" | "production";
+  port: number;
+  service: ServiceStatus;
+  dependencies: {
+    redis: DependencyStatus;
+  };
+}
+
 export const foundationSchemaVersion = "0.0.0";
