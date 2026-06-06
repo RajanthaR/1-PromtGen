@@ -18,20 +18,32 @@ export async function POST(
     process.env.NEXT_PUBLIC_PROMPTGEN_API_URL ??
     defaultApiBaseUrl
   ).replace(/\/$/, "");
-  const apiResponse = await fetch(`${apiBaseUrl}/enhance/${mode}`, {
-    body: await request.text(),
-    cache: "no-store",
-    headers: {
-      "content-type": request.headers.get("content-type") ?? "application/json",
-    },
-    method: "POST",
-  });
-  const body = await apiResponse.text();
 
-  return new NextResponse(body, {
-    headers: {
-      "content-type": apiResponse.headers.get("content-type") ?? "application/json",
-    },
-    status: apiResponse.status,
-  });
+  try {
+    const requestBody = await request.text();
+    const apiResponse = await fetch(`${apiBaseUrl}/enhance/${mode}`, {
+      body: requestBody,
+      cache: "no-store",
+      headers: {
+        "content-type": request.headers.get("content-type") ?? "application/json",
+      },
+      method: "POST",
+    });
+    const body = await apiResponse.text();
+
+    return new NextResponse(body, {
+      headers: {
+        "content-type": apiResponse.headers.get("content-type") ?? "application/json",
+      },
+      status: apiResponse.status,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "gateway_error",
+        message: error instanceof Error ? error.message : "Failed to connect to upstream API.",
+      },
+      { status: 502 },
+    );
+  }
 }

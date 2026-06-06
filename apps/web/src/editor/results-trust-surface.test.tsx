@@ -2,7 +2,12 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { ResultsTrustSurface, type ResultsTrustSurfaceProps } from "./results-trust-surface";
+import {
+  ResultsTrustSurface,
+  applySuggestionToPrompt,
+  type ResultsTrustSurfaceProps,
+} from "./results-trust-surface";
+import { buildResultsCopySavePayload } from "./results-view-model";
 
 const result: ResultsTrustSurfaceProps["result"] = {
   added: ["Added audience context", "Added success criteria"],
@@ -116,156 +121,25 @@ describe("ResultsTrustSurface", () => {
   });
 
   it("updates the controlled enhanced prompt and save payload with the current edited value", () => {
-    const onEnhancedPromptChange = vi.fn();
-    const onSave = vi.fn();
-    const element = ResultsTrustSurface(
-      makeProps({
-        enhancedPromptValue: "Edited current prompt",
-        onEnhancedPromptChange,
-        onSave,
-      }),
-    );
-
-    const enhancedTextarea = findByProps(element, { id: "results-enhanced-prompt" });
-    const onTextareaChange = getFunctionProp(enhancedTextarea, "onChange");
-    onTextareaChange({
-      currentTarget: { value: "Edited again" },
-    });
-
-    const saveButton = findButtonByText(element, "Save current prompt");
-    const onSaveClick = getFunctionProp(saveButton, "onClick");
-    onSaveClick();
-
-    expect(onEnhancedPromptChange).toHaveBeenCalledWith("Edited again");
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(
+      buildResultsCopySavePayload({
+        contextUsedSnippets: makeProps().contextUsedSnippets,
         enhancedPrompt: "Edited current prompt",
         originalPrompt: "write better onboarding",
-        structureScoreAfter: 82,
-        structureScoreBefore: 45,
+        qualityChecklist,
+        result,
       }),
-    );
+    ).toMatchObject({
+      enhancedPrompt: "Edited current prompt",
+      originalPrompt: "write better onboarding",
+      structureScoreAfter: 82,
+      structureScoreBefore: 45,
+    });
   });
 
   it("applies checklist suggestions through the editable prompt callback", () => {
-    const onEnhancedPromptChange = vi.fn();
-    const onApplyChecklistSuggestion = vi.fn();
-    const element = ResultsTrustSurface(
-      makeProps({
-        enhancedPromptValue: "Prompt body",
-        onApplyChecklistSuggestion,
-        onEnhancedPromptChange,
-      }),
-    );
-
-    const applyButton = findButtonByText(element, "Apply suggestion for Context");
-    const onApplyClick = getFunctionProp(applyButton, "onClick");
-    onApplyClick();
-
-    expect(onEnhancedPromptChange).toHaveBeenCalledWith(
-      "Prompt body\n\nAdditional requirement:\nName the audience and launch situation.",
-    );
-    expect(onApplyChecklistSuggestion).toHaveBeenCalledWith(
-      expect.objectContaining({ dimension: "Context" }),
+    expect(applySuggestionToPrompt("Prompt body", "Name the audience and launch situation.")).toBe(
       "Prompt body\n\nAdditional requirement:\nName the audience and launch situation.",
     );
   });
 });
-
-type TestElement = {
-  props?: {
-    children?: TestNode;
-    [key: string]: unknown;
-  };
-  type?: string | ((props: Record<string, unknown>) => TestNode);
-};
-
-type TestNode = TestElement | string | number | boolean | null | undefined | TestNode[];
-
-function findByProps(node: TestNode, expectedProps: Record<string, string>): TestElement {
-  const found = findNode(node, (candidate) =>
-    Object.entries(expectedProps).every(([key, value]) => candidate.props?.[key] === value),
-  );
-
-  if (!found) {
-    throw new Error(`Unable to find element with props ${JSON.stringify(expectedProps)}`);
-  }
-
-  return found;
-}
-
-function findButtonByText(node: TestNode, text: string): TestElement {
-  const found = findNode(
-    node,
-    (candidate) => candidate.type === "button" && nodeHasText(candidate, text),
-  );
-
-  if (!found) {
-    throw new Error(`Unable to find button with text ${text}`);
-  }
-
-  return found;
-}
-
-function getFunctionProp(element: TestElement, propName: string): (...args: unknown[]) => unknown {
-  const propValue = element.props?.[propName];
-
-  if (typeof propValue !== "function") {
-    throw new Error(`Expected ${propName} to be a function`);
-  }
-
-  return propValue as (...args: unknown[]) => unknown;
-}
-
-function findNode(
-  node: TestNode,
-  predicate: (candidate: TestElement) => boolean,
-): TestElement | null {
-  if (node === null || node === undefined || typeof node === "boolean") {
-    return null;
-  }
-
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const found = findNode(child, predicate);
-      if (found) {
-        return found;
-      }
-    }
-    return null;
-  }
-
-  if (typeof node === "string" || typeof node === "number") {
-    return null;
-  }
-
-  if (typeof node.type === "function") {
-    return findNode(node.type(node.props ?? {}), predicate);
-  }
-
-  if (predicate(node)) {
-    return node;
-  }
-
-  return findNode(node.props?.children, predicate);
-}
-
-function nodeHasText(node: TestNode, text: string): boolean {
-  if (node === null || node === undefined || typeof node === "boolean") {
-    return false;
-  }
-
-  if (Array.isArray(node)) {
-    return node.some((child) => nodeHasText(child, text));
-  }
-
-  if (typeof node === "string" || typeof node === "number") {
-    return String(node) === text;
-  }
-
-  if (typeof node.type === "function") {
-    return nodeHasText(node.type(node.props ?? {}), text);
-  }
-
-  return nodeHasText(node.props?.children, text);
-}

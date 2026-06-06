@@ -1,4 +1,10 @@
-import { createElement, type ChangeEvent, type CSSProperties } from "react";
+import {
+  createElement,
+  useState,
+  type ChangeEvent,
+  type CSSProperties,
+  type SyntheticEvent,
+} from "react";
 
 import type {
   ContextUsedSnippetViewModel,
@@ -63,6 +69,7 @@ export function ResultsTrustSurface({
   onCopy,
   onSave,
 }: ResultsTrustSurfaceProps) {
+  const [changesPanelOpen, setChangesPanelOpen] = useState(true);
   const payload = buildResultsCopySavePayload({
     contextUsedSnippets,
     enhancedPrompt: enhancedPromptValue,
@@ -197,7 +204,12 @@ export function ResultsTrustSurface({
     ),
     createElement(
       "details",
-      { open: true, style: { ...sectionStyle, padding: "1rem" } },
+      {
+        onToggle: (event: SyntheticEvent<HTMLDetailsElement>) =>
+          setChangesPanelOpen(event.currentTarget.open),
+        open: changesPanelOpen,
+        style: { ...sectionStyle, padding: "1rem" },
+      },
       createElement(
         "summary",
         {
@@ -544,7 +556,7 @@ function DiffBlock({ label, prefix, items }: { label: string; prefix: string; it
   );
 }
 
-function applySuggestionToPrompt(prompt: string, suggestion: string): string {
+export function applySuggestionToPrompt(prompt: string, suggestion: string): string {
   const trimmedPrompt = prompt.trimEnd();
   const trimmedSuggestion = suggestion.trim();
 

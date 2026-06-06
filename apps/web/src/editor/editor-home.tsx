@@ -98,18 +98,27 @@ export function EditorHome() {
   }
 
   async function copyCurrentPrompt(payload: ResultsCopySavePayload) {
-    await navigator.clipboard?.writeText(payload.enhancedPrompt);
-    setCopyStatusMessage("Copied.");
-    setFlowState((currentState) =>
-      reduceEnhancementFlow(currentState, {
-        type: "confirmation.shown",
-        confirmation: {
-          kind: "copied",
-          message: "Copied.",
-          canUndo: false,
-        },
-      }),
-    );
+    if (!navigator.clipboard) {
+      setCopyStatusMessage("Clipboard access not supported in this browser.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(payload.enhancedPrompt);
+      setCopyStatusMessage("Copied.");
+      setFlowState((currentState) =>
+        reduceEnhancementFlow(currentState, {
+          type: "confirmation.shown",
+          confirmation: {
+            kind: "copied",
+            message: "Copied.",
+            canUndo: false,
+          },
+        }),
+      );
+    } catch {
+      setCopyStatusMessage("Failed to copy to clipboard.");
+    }
   }
 
   function saveCurrentPrompt(_payload: ResultsCopySavePayload) {
