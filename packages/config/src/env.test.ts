@@ -9,6 +9,7 @@ describe("loadPromptGenEnv", () => {
       appUrl: "http://localhost:3000",
       authSessionTtlSeconds: 2_592_000,
       nodeEnv: "development",
+      promptQualityJudgeEnabled: false,
     });
   });
 
@@ -19,9 +20,11 @@ describe("loadPromptGenEnv", () => {
         AUTH_SESSION_TTL_SECONDS: "3600",
         GOOGLE_OAUTH_CLIENT_ID: "local-google-client-id",
         GOOGLE_OAUTH_CLIENT_SECRET: "replace-with-local-secret",
+        LLM_JUDGE_PROVIDER_API_KEY: "replace-with-local-secret",
         LLM_PROVIDER_API_KEY: "replace-with-local-secret",
         NEXT_PUBLIC_APP_URL: "http://localhost:3000/",
         NODE_ENV: "test",
+        PROMPTGEN_LLM_JUDGE_ENABLED: "false",
       }),
     ).toEqual({
       apiPort: 4500,
@@ -29,6 +32,19 @@ describe("loadPromptGenEnv", () => {
       authSessionTtlSeconds: 3600,
       googleOAuthClientId: "local-google-client-id",
       nodeEnv: "test",
+      promptQualityJudgeEnabled: false,
+    });
+  });
+
+  it("loads the optional LLM judge feature flag and provider key", () => {
+    expect(
+      loadPromptGenEnv({
+        LLM_JUDGE_PROVIDER_API_KEY: "test-openai-key",
+        PROMPTGEN_LLM_JUDGE_ENABLED: "1",
+      }),
+    ).toMatchObject({
+      llmJudgeProviderApiKey: "test-openai-key",
+      promptQualityJudgeEnabled: true,
     });
   });
 
@@ -49,6 +65,12 @@ describe("loadPromptGenEnv", () => {
   it("rejects invalid auth session TTL values early", () => {
     expect(() => loadPromptGenEnv({ AUTH_SESSION_TTL_SECONDS: "0" })).toThrow(
       "AUTH_SESSION_TTL_SECONDS must be a positive integer.",
+    );
+  });
+
+  it("rejects invalid LLM judge feature flag values early", () => {
+    expect(() => loadPromptGenEnv({ PROMPTGEN_LLM_JUDGE_ENABLED: "yes" })).toThrow(
+      "PROMPTGEN_LLM_JUDGE_ENABLED must be true, false, 1, or 0.",
     );
   });
 });

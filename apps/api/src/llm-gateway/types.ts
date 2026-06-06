@@ -40,6 +40,33 @@ export interface PromptEnhancementResult {
   changed: string[];
 }
 
+export interface PromptQualityJudgeSuggestion {
+  dimension:
+    | "clarity"
+    | "context"
+    | "specificity"
+    | "output_format"
+    | "model_tool_fit"
+    | "safety_privacy"
+    | "concision";
+  weakness: string;
+  improvement: string;
+}
+
+export interface PromptQualityJudgeResult {
+  summary: string;
+  suggestions: PromptQualityJudgeSuggestion[];
+}
+
+export interface PromptQualityJudgeInput {
+  raw_prompt: string;
+  enhanced_prompt: string;
+  target_model: string;
+  generator_provider: LlmProviderId;
+  generator_model: string;
+  prompt_type: "text";
+}
+
 export interface LlmGatewayMeta {
   provider: LlmProviderId;
   model: string;
@@ -53,6 +80,11 @@ export interface PromptEnhancementOutput {
   meta: LlmGatewayMeta;
 }
 
+export interface PromptQualityJudgeOutput {
+  result: PromptQualityJudgeResult;
+  meta: LlmGatewayMeta;
+}
+
 export interface ProviderTokenUsage {
   inputTokens: number;
   outputTokens: number;
@@ -63,6 +95,8 @@ export interface ProviderTokenUsage {
 export interface ProviderGenerateInput {
   apiKey: string;
   model: LlmModelConfig;
+  responseSchema?: Record<string, unknown>;
+  schemaName?: string;
   staticParts: string[];
   variablePart: string;
 }
@@ -81,7 +115,7 @@ export interface LlmProviderAdapter {
 export interface LlmTraceEvent {
   provider: LlmProviderId;
   model: string;
-  mode: PromptEnhancementMode;
+  mode: PromptEnhancementMode | "quality_judge";
   prompt_type: "text";
   target_model: string;
   latency_ms: number;
@@ -96,4 +130,3 @@ export interface LlmTraceEvent {
 export interface LlmTraceReporter {
   recordLlmCall(event: LlmTraceEvent): Promise<void> | void;
 }
-

@@ -16,7 +16,7 @@
     "test": "turbo run test",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "eval": "pnpm exec promptfoo eval -c packages/prompt-engine/evals/promptfooconfig.yaml --no-cache"
+    "eval": "pnpm exec promptfoo eval -c packages/prompt-engine/evals/promptfooconfig.yaml --no-cache && pnpm exec promptfoo eval -c packages/prompt-engine/evals/judge-promptfooconfig.yaml --no-cache"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

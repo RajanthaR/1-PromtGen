@@ -22,6 +22,31 @@ export type PromptEnhancementMode = "improve" | "enhance" | "refine" | "shorten"
 
 export type PromptTargetModel = "gemini";
 
+export const PROMPT_QUALITY_JUDGE_DIMENSIONS = [
+  "clarity",
+  "context",
+  "specificity",
+  "output_format",
+  "model_tool_fit",
+  "safety_privacy",
+  "concision",
+] as const;
+
+export type PromptQualityJudgeDimension = (typeof PROMPT_QUALITY_JUDGE_DIMENSIONS)[number];
+
+export const PROMPT_QUALITY_JUDGE_OUTPUT_FIELDS = ["summary", "suggestions"] as const;
+
+export type PromptQualityJudgeOutputField = (typeof PROMPT_QUALITY_JUDGE_OUTPUT_FIELDS)[number];
+
+export const PROMPT_QUALITY_JUDGE_SUGGESTION_FIELDS = [
+  "dimension",
+  "weakness",
+  "improvement",
+] as const;
+
+export type PromptQualityJudgeSuggestionField =
+  (typeof PROMPT_QUALITY_JUDGE_SUGGESTION_FIELDS)[number];
+
 export type PromptTone =
   | "neutral"
   | "professional"
@@ -48,6 +73,17 @@ export interface PromptEngineStructuredOutput {
   changed: string[];
 }
 
+export interface PromptQualityJudgeSuggestion {
+  dimension: PromptQualityJudgeDimension;
+  weakness: string;
+  improvement: string;
+}
+
+export interface PromptQualityJudgeStructuredOutput {
+  summary: string;
+  suggestions: PromptQualityJudgeSuggestion[];
+}
+
 export type PromptEngineJsonSchema = {
   readonly $schema: "https://json-schema.org/draft/2020-12/schema";
   readonly title: string;
@@ -56,6 +92,16 @@ export type PromptEngineJsonSchema = {
   readonly additionalProperties: false;
   readonly required: readonly PromptEngineOutputField[];
   readonly properties: Record<PromptEngineOutputField, unknown>;
+};
+
+export type PromptQualityJudgeJsonSchema = {
+  readonly $schema: "https://json-schema.org/draft/2020-12/schema";
+  readonly title: string;
+  readonly description: string;
+  readonly type: "object";
+  readonly additionalProperties: false;
+  readonly required: readonly PromptQualityJudgeOutputField[];
+  readonly properties: Record<PromptQualityJudgeOutputField, unknown>;
 };
 
 const stringArraySchema = (description: string, extra: Record<string, unknown> = {}) => ({
@@ -135,6 +181,51 @@ export const PROMPT_ENGINE_OUTPUT_SCHEMA = {
     changed: stringArraySchema("Prompt elements rewritten, reorganized, or made more specific."),
   },
 } as const satisfies PromptEngineJsonSchema;
+
+export const PROMPT_QUALITY_JUDGE_OUTPUT_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  title: "PromptForgeQualityJudgeSuggestions",
+  description:
+    "Qualitative prompt-structure suggestions from an optional secondary judge. Numeric scores, grades, percentages, and structure_score are intentionally excluded.",
+  type: "object",
+  additionalProperties: false,
+  required: PROMPT_QUALITY_JUDGE_OUTPUT_FIELDS,
+  properties: {
+    summary: {
+      type: "string",
+      description:
+        "One short qualitative summary of the most important structural weakness. Do not include numeric scores, grades, percentages, or structure_score.",
+    },
+    suggestions: {
+      type: "array",
+      description: "Qualitative improvements only. These are secondary suggestions, not a score.",
+      minItems: 0,
+      maxItems: 5,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: PROMPT_QUALITY_JUDGE_SUGGESTION_FIELDS,
+        properties: {
+          dimension: {
+            type: "string",
+            enum: PROMPT_QUALITY_JUDGE_DIMENSIONS,
+            description: "Checklist dimension the suggestion belongs to.",
+          },
+          weakness: {
+            type: "string",
+            description:
+              "Specific qualitative weakness. Do not include numeric scores, grades, percentages, or structure_score.",
+          },
+          improvement: {
+            type: "string",
+            description:
+              "Actionable qualitative suggestion. Do not include numeric scores, grades, percentages, or structure_score.",
+          },
+        },
+      },
+    },
+  },
+} as const satisfies PromptQualityJudgeJsonSchema;
 
 export interface PromptEngineSchemaValidationResult {
   valid: boolean;
@@ -222,4 +313,111 @@ export function validatePromptEngineOutput(value: unknown): PromptEngineSchemaVa
   }
 
   return { valid: errors.length === 0, errors };
+}
+
+export function validatePromptQualityJudgeOutput(
+  value: unknown,
+): PromptEngineSchemaValidationResult {
+  const errors: string[] = [];
+
+  if (!isRecord(value)) {
+    return { valid: false, errors: ["output must be an object"] };
+  }
+
+  const allowedFields = new Set<string>(PROMPT_QUALITY_JUDGE_OUTPUT_FIELDS);
+  for (const key of Object.keys(value)) {
+    if (!allowedFields.has(key)) {
+      errors.push(`unexpected field: ${key}`);
+    }
+  }
+
+  for (const field of PROMPT_QUALITY_JUDGE_OUTPUT_FIELDS) {
+    if (!(field in value)) {
+      errors.push(`missing required field: ${field}`);
+    }
+  }
+
+  if ("summary" in value && typeof value.summary !== "string") {
+    errors.push("summary must be a string");
+  }
+
+  if ("suggestions" in value && !Array.isArray(value.suggestions)) {
+    errors.push("suggestions must be an array");
+  }
+
+  if (Array.isArray(value.suggestions) && value.suggestions.length > 5) {
+    errors.push("suggestions must contain at most five items");
+  }
+
+  for (const [index, suggestion] of Array.isArray(value.suggestions)
+    ? value.suggestions.entries()
+    : []) {
+    if (!isRecord(suggestion)) {
+      errors.push(`suggestions[${index}] must be an object`);
+      continue;
+    }
+
+    const allowedSuggestionFields = new Set<string>(PROMPT_QUALITY_JUDGE_SUGGESTION_FIELDS);
+    for (const key of Object.keys(suggestion)) {
+      if (!allowedSuggestionFields.has(key)) {
+        errors.push(`suggestions[${index}] unexpected field: ${key}`);
+      }
+    }
+
+    if (
+      !PROMPT_QUALITY_JUDGE_DIMENSIONS.includes(suggestion.dimension as PromptQualityJudgeDimension)
+    ) {
+      errors.push(`suggestions[${index}].dimension must be a supported dimension`);
+    }
+
+    for (const field of ["weakness", "improvement"] satisfies Array<
+      keyof PromptQualityJudgeSuggestion
+    >) {
+      if (typeof suggestion[field] !== "string") {
+        errors.push(`suggestions[${index}].${field} must be a string`);
+      }
+    }
+  }
+
+  const strings = collectJudgeStrings(value);
+  for (const text of strings) {
+    if (containsNumericScore(text)) {
+      errors.push("judge output must not include numeric scores, grades, or percentages");
+      break;
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+function collectJudgeStrings(value: Record<string, unknown>): string[] {
+  const strings: string[] = [];
+
+  if (typeof value.summary === "string") {
+    strings.push(value.summary);
+  }
+
+  if (Array.isArray(value.suggestions)) {
+    for (const suggestion of value.suggestions) {
+      if (!isRecord(suggestion)) {
+        continue;
+      }
+
+      for (const field of PROMPT_QUALITY_JUDGE_SUGGESTION_FIELDS) {
+        if (typeof suggestion[field] === "string") {
+          strings.push(suggestion[field]);
+        }
+      }
+    }
+  }
+
+  return strings;
+}
+
+function containsNumericScore(text: string): boolean {
+  return (
+    /\bstructure[_\s-]?score\b/i.test(text) ||
+    /\b(scores?|grades?|ratings?|rated)\b[^.!?\n]{0,40}\b\d+(?:\.\d+)?\b/i.test(text) ||
+    /\b\d+(?:\.\d+)?\s*(?:%|percent|\/\s*10|\/\s*100|out of\s+(?:10|100))\b/i.test(text)
+  );
 }

@@ -11,6 +11,7 @@ import type { LlmProviderAdapter } from "./types";
 export interface LlmAdapterRegistry {
   resolveGenerationModel(targetModel: string): LlmModelConfig;
   resolveFallbackModel(primaryModel: LlmModelConfig): LlmModelConfig | null;
+  resolveJudgeModel(generatorModelId: string): LlmModelConfig;
   adapterFor(provider: LlmProviderId): LlmProviderAdapter;
 }
 
@@ -19,7 +20,9 @@ export function createLlmAdapterRegistry(options: {
   config?: LlmGatewayRegistryConfig;
 }): LlmAdapterRegistry {
   const config = options.config ?? defaultLlmGatewayRegistry;
-  const models = new Map(config.models.filter((model) => model.enabled).map((model) => [model.id, model]));
+  const models = new Map(
+    config.models.filter((model) => model.enabled).map((model) => [model.id, model]),
+  );
 
   return {
     resolveGenerationModel(targetModel) {
@@ -31,7 +34,10 @@ export function createLlmAdapterRegistry(options: {
       const model = configuredModel ?? models.get(config.defaultModelId);
 
       if (!model) {
-        throw new LlmGatewayError("configuration_error", "No enabled launch LLM model is configured.");
+        throw new LlmGatewayError(
+          "configuration_error",
+          "No enabled launch LLM model is configured.",
+        );
       }
 
       if (!model.supportsStructuredOutput) {
@@ -56,6 +62,48 @@ export function createLlmAdapterRegistry(options: {
 
       return fallbackModel.supportsStructuredOutput ? fallbackModel : null;
     },
+    resolveJudgeModel(generatorModelId) {
+      if (!config.judgeModelId) {
+        throw new LlmGatewayError(
+          "configuration_error",
+          "No quality judge LLM model is configured.",
+        );
+      }
+
+      const judgeModel = models.get(config.judgeModelId);
+
+      if (!judgeModel) {
+        throw new LlmGatewayError(
+          "configuration_error",
+          "Configured quality judge model is not enabled.",
+        );
+      }
+
+      if (!judgeModel.supportsStructuredOutput) {
+        throw new LlmGatewayError(
+          "configuration_error",
+          `Configured judge model ${judgeModel.id} does not support structured output.`,
+        );
+      }
+
+      const generatorModel = models.get(generatorModelId);
+
+      if (generatorModel && generatorModel.family === judgeModel.family) {
+        throw new LlmGatewayError(
+          "configuration_error",
+          "Quality judge model family must differ from the generator model family.",
+        );
+      }
+
+      if (!generatorModel && inferModelFamily(generatorModelId) === judgeModel.family) {
+        throw new LlmGatewayError(
+          "configuration_error",
+          "Quality judge model family must differ from the generator model family.",
+        );
+      }
+
+      return judgeModel;
+    },
     adapterFor(provider) {
       const adapter = options.adapters[provider];
 
@@ -71,3 +119,16 @@ export function createLlmAdapterRegistry(options: {
   };
 }
 
+function inferModelFamily(modelId: string): LlmModelConfig["family"] | null {
+  const normalized = modelId.toLowerCase();
+
+  if (normalized.startsWith("gemini")) {
+    return "gemini";
+  }
+
+  if (normalized.startsWith("gpt") || normalized.startsWith("o")) {
+    return "openai";
+  }
+
+  return null;
+}
