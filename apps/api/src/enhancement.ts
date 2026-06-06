@@ -3,6 +3,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HistoryUsagePort, RecordPromptOperationInput } from "@promptgen/history-usage";
 
 import type { JsonLogger } from "./logger";
+import type { PromptStructureChecklist } from "./quality-checklist";
+import { evaluatePromptStructure } from "./quality-checklist";
 
 export const enhancementModes = ["improve", "enhance", "refine", "shorten"] as const;
 
@@ -26,6 +28,11 @@ export interface EnhancementOutput {
   changed: string[];
 }
 
+export interface EnhancementQualityChecklist {
+  before: PromptStructureChecklist;
+  after: PromptStructureChecklist;
+}
+
 export interface EnhancementGatewayRequest {
   raw_prompt: string;
   mode: EnhancementMode;
@@ -45,13 +52,44 @@ export interface EnhancementGatewayResult {
   };
 }
 
+export interface EnhancementJudgeGatewayRequest {
+  raw_prompt: string;
+  enhanced_prompt: string;
+  target_model: string;
+  generator_provider: string;
+  generator_model: string;
+  prompt_type: "text";
+}
+
+export interface EnhancementJudgeSuggestion {
+  dimension: string;
+  weakness: string;
+  improvement: string;
+}
+
+export interface EnhancementJudgeGatewayResult {
+  result: {
+    summary: string;
+    suggestions: EnhancementJudgeSuggestion[];
+  };
+  meta: {
+    provider: string;
+    model: string;
+    tokens: number;
+    latency_ms: number;
+    fellback: boolean;
+  };
+}
+
 export interface EnhancementGateway {
   enhance(request: EnhancementGatewayRequest): Promise<EnhancementGatewayResult>;
+  judge?(request: EnhancementJudgeGatewayRequest): Promise<EnhancementJudgeGatewayResult>;
 }
 
 export interface EnhancementHandlerDependencies {
   gateway: EnhancementGateway;
   history?: HistoryUsagePort;
+  llmJudgeEnabled?: boolean;
   logger: JsonLogger;
 }
 
@@ -62,6 +100,26 @@ interface EnhancementHttpRequest {
   options: Record<string, unknown>;
   user_id?: string;
 }
+
+type EnhancementJudgeResponse =
+  | {
+      enabled: false;
+      status: "disabled";
+      suggestions: [];
+    }
+  | {
+      enabled: true;
+      status: "completed";
+      summary: string;
+      suggestions: EnhancementJudgeSuggestion[];
+      meta: EnhancementJudgeGatewayResult["meta"];
+    }
+  | {
+      enabled: true;
+      status: "failed" | "unavailable";
+      suggestions: [];
+      error: "judge_failed" | "judge_not_configured";
+    };
 
 interface ClarificationCheck {
   isThin: boolean;
@@ -152,16 +210,22 @@ export async function handleEnhancementRequest(
 
   if (mode === "refine" && clarification.isThin && !clarificationSkipped) {
     const result = buildClarificationResult(parsedRequest.raw_prompt, clarification);
+    const qualityChecklist = buildQualityChecklist(
+      parsedRequest.raw_prompt,
+      result.enhanced_prompt,
+    );
     await recordOperation({
       dependencies,
       enhancedPrompt: result.enhanced_prompt,
       gatewayMeta: null,
       input: parsedRequest,
       mode,
+      qualityChecklist,
       userId,
     });
     writeJson(response, 200, {
       result,
+      quality_checklist: qualityChecklist,
       meta: {
         provider: null,
         model: null,
@@ -214,6 +278,10 @@ export async function handleEnhancementRequest(
       mode === "refine" && clarificationSkipped
         ? applySkippedClarificationPlaceholders(validation.output, clarification.placeholders)
         : validation.output;
+    const qualityChecklist = buildQualityChecklist(
+      parsedRequest.raw_prompt,
+      result.enhanced_prompt,
+    );
 
     await recordOperation({
       dependencies,
@@ -221,12 +289,22 @@ export async function handleEnhancementRequest(
       gatewayMeta: gatewayResult.meta,
       input: parsedRequest,
       mode,
+      qualityChecklist,
       userId,
+    });
+
+    const qualityJudge = await maybeRunQualityJudge({
+      dependencies,
+      enhancedPrompt: result.enhanced_prompt,
+      gatewayMeta: gatewayResult.meta,
+      input: parsedRequest,
     });
 
     writeJson(response, 200, {
       result,
+      quality_checklist: qualityChecklist,
       meta: gatewayResult.meta,
+      quality_judge: qualityJudge,
     });
     dependencies.logger.info("api.enhancement_request", {
       mode,
@@ -237,6 +315,7 @@ export async function handleEnhancementRequest(
       tokens: gatewayResult.meta.tokens,
       latencyMs: gatewayResult.meta.latency_ms,
       fellback: gatewayResult.meta.fellback,
+      qualityJudgeStatus: qualityJudge.status,
     });
   } catch (error) {
     writeJson(response, 502, {
@@ -249,6 +328,67 @@ export async function handleEnhancementRequest(
       statusCode: 502,
       error: "gateway_error",
     });
+  }
+}
+
+async function maybeRunQualityJudge(input: {
+  dependencies: EnhancementHandlerDependencies;
+  enhancedPrompt: string;
+  gatewayMeta: EnhancementGatewayResult["meta"];
+  input: EnhancementHttpRequest;
+}): Promise<EnhancementJudgeResponse> {
+  if (!shouldRunLlmJudge(input.input.options) || input.dependencies.llmJudgeEnabled !== true) {
+    return {
+      enabled: false,
+      status: "disabled",
+      suggestions: [],
+    };
+  }
+
+  if (!input.dependencies.gateway.judge) {
+    input.dependencies.logger.warn("api.enhancement_quality_judge", {
+      status: "unavailable",
+      error: "judge_not_configured",
+    });
+
+    return {
+      enabled: true,
+      status: "unavailable",
+      suggestions: [],
+      error: "judge_not_configured",
+    };
+  }
+
+  try {
+    const judgeResult = await input.dependencies.gateway.judge({
+      enhanced_prompt: input.enhancedPrompt,
+      generator_model: input.gatewayMeta.model,
+      generator_provider: input.gatewayMeta.provider,
+      prompt_type: input.input.prompt_type,
+      raw_prompt: input.input.raw_prompt,
+      target_model: input.input.target_model,
+    });
+
+    return {
+      enabled: true,
+      status: "completed",
+      summary: judgeResult.result.summary,
+      suggestions: judgeResult.result.suggestions,
+      meta: judgeResult.meta,
+    };
+  } catch (error) {
+    input.dependencies.logger.warn("api.enhancement_quality_judge", {
+      status: "failed",
+      error: "judge_failed",
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
+
+    return {
+      enabled: true,
+      status: "failed",
+      suggestions: [],
+      error: "judge_failed",
+    };
   }
 }
 
@@ -379,7 +519,8 @@ function applySkippedClarificationPlaceholders(
 
   return {
     ...output,
-    enhanced_prompt: `${output.enhanced_prompt.trim()}\n\nClarify before use: replace ${placeholderText} with the missing details.`.trim(),
+    enhanced_prompt:
+      `${output.enhanced_prompt.trim()}\n\nClarify before use: replace ${placeholderText} with the missing details.`.trim(),
     context: [output.context.trim(), `Missing details: ${placeholderText}.`]
       .filter(Boolean)
       .join(" "),
@@ -523,12 +664,17 @@ function isClarificationSkipped(options: Record<string, unknown>): boolean {
   return options.skip_clarification === true || options.skipped_clarification === true;
 }
 
+function shouldRunLlmJudge(options: Record<string, unknown>): boolean {
+  return options.enable_llm_judge === true;
+}
+
 async function recordOperation(input: {
   dependencies: EnhancementHandlerDependencies;
   enhancedPrompt: string;
   gatewayMeta: EnhancementGatewayResult["meta"] | null;
   input: EnhancementHttpRequest;
   mode: EnhancementMode;
+  qualityChecklist: EnhancementQualityChecklist;
   userId: string | null;
 }): Promise<void> {
   if (!input.dependencies.history || !input.userId) {
@@ -541,6 +687,8 @@ async function recordOperation(input: {
     mode: input.mode,
     targetModel: input.input.target_model,
     promptType: input.input.prompt_type,
+    structureScoreBefore: input.qualityChecklist.before.structure_score,
+    structureScoreAfter: input.qualityChecklist.after.structure_score,
     saved: false,
     ...(input.gatewayMeta
       ? {
@@ -553,6 +701,16 @@ async function recordOperation(input: {
   };
 
   await input.dependencies.history.recordPromptOperation(input.userId, operation);
+}
+
+function buildQualityChecklist(
+  originalPrompt: string,
+  enhancedPrompt: string,
+): EnhancementQualityChecklist {
+  return {
+    before: evaluatePromptStructure(originalPrompt),
+    after: evaluatePromptStructure(enhancedPrompt),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

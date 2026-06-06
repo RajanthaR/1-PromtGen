@@ -41,6 +41,7 @@ describe("api server", () => {
           appUrl: "http://localhost:3000",
           authSessionTtlSeconds: 2_592_000,
           nodeEnv: "test",
+          promptQualityJudgeEnabled: false,
         },
         { redis },
       ),
@@ -80,6 +81,7 @@ describe("api server", () => {
           appUrl: "http://localhost:3000",
           authSessionTtlSeconds: 2_592_000,
           nodeEnv: "test",
+          promptQualityJudgeEnabled: false,
           redisUrl: "redis://localhost:6379",
         },
         logger: {
@@ -149,6 +151,7 @@ describe("api server", () => {
           appUrl: "http://localhost:3000",
           authSessionTtlSeconds: 2_592_000,
           nodeEnv: "test",
+          promptQualityJudgeEnabled: false,
         },
         logger: {
           info() {

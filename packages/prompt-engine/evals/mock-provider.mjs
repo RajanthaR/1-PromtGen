@@ -18,6 +18,11 @@ export default class PromptEngineMockProvider {
           prompt.includes("# Golden Few-Shots") &&
           prompt.includes("# Provider-Enforced Output Schema"),
         promptWrapsUserInput: prompt.includes("<user_input>") && prompt.includes("</user_input>"),
+        promptWrapsJudgeInputs:
+          prompt.includes("<original_prompt>") &&
+          prompt.includes("</original_prompt>") &&
+          prompt.includes("<enhanced_prompt>") &&
+          prompt.includes("</enhanced_prompt>"),
       },
     };
   }

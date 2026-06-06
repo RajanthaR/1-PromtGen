@@ -7,8 +7,10 @@ export interface PromptGenEnv {
   databaseUrl?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  llmJudgeProviderApiKey?: string;
   llmProviderApiKey?: string;
   nodeEnv: PromptGenNodeEnv;
+  promptQualityJudgeEnabled: boolean;
   redisUrl?: string;
 }
 
@@ -19,6 +21,7 @@ const defaultEnv: PromptGenEnv = {
   appUrl: "http://localhost:3000",
   authSessionTtlSeconds: 60 * 60 * 24 * 30,
   nodeEnv: "development",
+  promptQualityJudgeEnabled: false,
 };
 
 export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv {
@@ -33,7 +36,12 @@ export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv 
   const googleOAuthClientId = parseOptional(source.GOOGLE_OAUTH_CLIENT_ID);
   const googleOAuthClientSecret = parseOptionalSecret(source.GOOGLE_OAUTH_CLIENT_SECRET);
   const redisUrl = parseOptional(source.REDIS_URL);
+  const llmJudgeProviderApiKey = parseOptionalSecret(source.LLM_JUDGE_PROVIDER_API_KEY);
   const llmProviderApiKey = parseOptionalSecret(source.LLM_PROVIDER_API_KEY);
+  const promptQualityJudgeEnabled = parseBooleanFlag(
+    source.PROMPTGEN_LLM_JUDGE_ENABLED,
+    "PROMPTGEN_LLM_JUDGE_ENABLED",
+  );
 
   return {
     apiPort,
@@ -42,8 +50,10 @@ export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv 
     ...(databaseUrl ? { databaseUrl } : {}),
     ...(googleOAuthClientId ? { googleOAuthClientId } : {}),
     ...(googleOAuthClientSecret ? { googleOAuthClientSecret } : {}),
+    ...(llmJudgeProviderApiKey ? { llmJudgeProviderApiKey } : {}),
     ...(llmProviderApiKey ? { llmProviderApiKey } : {}),
     nodeEnv,
+    promptQualityJudgeEnabled,
     ...(redisUrl ? { redisUrl } : {}),
   };
 }
@@ -102,4 +112,22 @@ function parseOptionalSecret(value: string | undefined): string | undefined {
   }
 
   return normalized;
+}
+
+function parseBooleanFlag(value: string | undefined, name: string): boolean {
+  if (value === undefined || value.trim() === "") {
+    return false;
+  }
+
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === "true" || normalized === "1") {
+    return true;
+  }
+
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+
+  throw new Error(`${name} must be true, false, 1, or 0.`);
 }

@@ -1,11 +1,14 @@
 import {
   PROMPT_ENGINE_OUTPUT_SCHEMA,
+  PROMPT_QUALITY_JUDGE_OUTPUT_SCHEMA,
+  validatePromptQualityJudgeOutput,
   validatePromptEngineOutput,
 } from "@promptgen/prompt-engine";
 
-import type { PromptEnhancementResult } from "./types";
+import type { PromptEnhancementResult, PromptQualityJudgeResult } from "./types";
 
 export const promptEnhancementJsonSchema = PROMPT_ENGINE_OUTPUT_SCHEMA;
+export const promptQualityJudgeJsonSchema = PROMPT_QUALITY_JUDGE_OUTPUT_SCHEMA;
 
 const requiredStringFields = [
   "title",
@@ -31,7 +34,9 @@ export function validatePromptEnhancementResult(value: unknown): PromptEnhanceme
   const schemaValidation = validatePromptEngineOutput(value);
 
   if (!schemaValidation.valid) {
-    throw new Error(`Structured output failed schema validation: ${schemaValidation.errors.join("; ")}`);
+    throw new Error(
+      `Structured output failed schema validation: ${schemaValidation.errors.join("; ")}`,
+    );
   }
 
   if (!isRecord(value)) {
@@ -81,6 +86,31 @@ export function validatePromptEnhancementResult(value: unknown): PromptEnhanceme
   }
 
   return result;
+}
+
+export function validatePromptQualityJudgeResult(value: unknown): PromptQualityJudgeResult {
+  const schemaValidation = validatePromptQualityJudgeOutput(value);
+
+  if (!schemaValidation.valid) {
+    throw new Error(
+      `Structured judge output failed schema validation: ${schemaValidation.errors.join("; ")}`,
+    );
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("Structured judge output must be an object.");
+  }
+
+  return {
+    summary: value.summary as string,
+    suggestions: (value.suggestions as PromptQualityJudgeResult["suggestions"]).map(
+      (suggestion) => ({
+        dimension: suggestion.dimension,
+        weakness: suggestion.weakness,
+        improvement: suggestion.improvement,
+      }),
+    ),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -20,7 +20,9 @@ interface GeminiResponse {
   };
 }
 
-export function createGeminiAdapter(options: { fetch?: FetchLike; timeoutMs?: number } = {}): LlmProviderAdapter {
+export function createGeminiAdapter(
+  options: { fetch?: FetchLike; timeoutMs?: number } = {},
+): LlmProviderAdapter {
   const fetchImpl = options.fetch ?? fetch;
   const timeoutMs = options.timeoutMs ?? 15_000;
 
@@ -56,7 +58,10 @@ export function createGeminiAdapter(options: { fetch?: FetchLike; timeoutMs?: nu
         const payload = (await response.json()) as unknown;
 
         if (!isGeminiResponse(payload)) {
-          throw new LlmProviderError("invalid_response", "Gemini returned an invalid response payload.");
+          throw new LlmProviderError(
+            "invalid_response",
+            "Gemini returned an invalid response payload.",
+          );
         }
 
         const text = extractGeminiText(payload);
@@ -81,9 +86,14 @@ export function createGeminiAdapter(options: { fetch?: FetchLike; timeoutMs?: nu
         }
 
         if (error instanceof SyntaxError) {
-          throw new LlmProviderError("invalid_json", "Gemini returned invalid structured JSON.", true, {
-            cause: error,
-          });
+          throw new LlmProviderError(
+            "invalid_json",
+            "Gemini returned invalid structured JSON.",
+            true,
+            {
+              cause: error,
+            },
+          );
         }
 
         throw new LlmProviderError("gemini_request_failed", "Gemini request failed.", true, {
@@ -112,7 +122,7 @@ export function buildGeminiRequestBody(input: ProviderGenerateInput): Record<str
       responseFormat: {
         text: {
           mimeType: "application/json",
-          schema: promptEnhancementJsonSchema,
+          schema: input.responseSchema ?? promptEnhancementJsonSchema,
         },
       },
     },

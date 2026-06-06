@@ -93,6 +93,7 @@ async function handleApiRequest(
       await handleEnhancementRequest(request, response, mode, {
         gateway,
         logger,
+        llmJudgeEnabled: env.promptQualityJudgeEnabled,
         ...(history ? { history } : {}),
       });
       return;
