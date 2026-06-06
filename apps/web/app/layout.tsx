@@ -7,7 +7,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  description: "Phase 0 placeholder for the PromptForge Studio web app.",
+  description: "PromptForge Studio editor for enhancing and refining prompts.",
   title: "PromptForge Studio",
 };
 
