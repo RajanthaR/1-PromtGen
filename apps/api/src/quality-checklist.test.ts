@@ -111,6 +111,18 @@ describe("quality checklist heuristic", () => {
     expect(statusFor(result, "Safety/privacy")).toBe("missing");
   });
 
+  it("does not treat harmless secret or token wording as sensitive data", () => {
+    const story = evaluatePromptStructure(
+      "Write a short story about a secret garden for students in Markdown.",
+    );
+    const parser = evaluatePromptStructure(
+      "Write a parser that returns the first token from each sentence in JSON.",
+    );
+
+    expect(statusFor(story, "Safety/privacy")).toBe("pass");
+    expect(statusFor(parser, "Safety/privacy")).toBe("pass");
+  });
+
   it("marks concision partial when the prompt is actionable but thin", () => {
     const result = evaluatePromptStructure("Write a launch email for teachers in Markdown.");
 

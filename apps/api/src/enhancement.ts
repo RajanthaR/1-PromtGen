@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { HistoryUsagePort, RecordPromptOperationInput } from "@promptgen/history-usage";
 
+import { LlmGatewayError } from "./llm-gateway";
 import type { JsonLogger } from "./logger";
 import type { PromptStructureChecklist } from "./quality-checklist";
 import { evaluatePromptStructure } from "./quality-checklist";
@@ -377,17 +378,20 @@ async function maybeRunQualityJudge(input: {
       meta: judgeResult.meta,
     };
   } catch (error) {
+    const isConfigurationError =
+      error instanceof LlmGatewayError && error.code === "configuration_error";
+
     input.dependencies.logger.warn("api.enhancement_quality_judge", {
-      status: "failed",
-      error: "judge_failed",
+      status: isConfigurationError ? "unavailable" : "failed",
+      error: isConfigurationError ? "judge_not_configured" : "judge_failed",
       errorName: error instanceof Error ? error.name : "unknown",
     });
 
     return {
       enabled: true,
-      status: "failed",
+      status: isConfigurationError ? "unavailable" : "failed",
       suggestions: [],
-      error: "judge_failed",
+      error: isConfigurationError ? "judge_not_configured" : "judge_failed",
     };
   }
 }

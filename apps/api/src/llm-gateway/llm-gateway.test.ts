@@ -4,7 +4,7 @@ import { defaultLlmGatewayRegistry, type LlmGatewayRegistryConfig } from "@promp
 
 import { LlmProviderError } from "./errors";
 import { buildGeminiRequestBody, createGeminiAdapter } from "./gemini-adapter";
-import { buildOpenAIResponsesRequestBody } from "./openai-adapter";
+import { buildOpenAIResponsesRequestBody, createOpenAIAdapter } from "./openai-adapter";
 import { createLlmGateway } from "./gateway";
 import { createLlmAdapterRegistry } from "./registry";
 import { promptQualityJudgeJsonSchema } from "./schema";
@@ -212,6 +212,103 @@ describe("llm gateway", () => {
           type: "json_schema",
         },
       },
+    });
+  });
+
+  it("preserves OpenAI JSON error payloads on non-OK responses", async () => {
+    const adapter = createOpenAIAdapter({
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              message: "Incorrect API key provided.",
+              type: "invalid_api_key",
+            },
+          }),
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+            status: 401,
+          },
+        ),
+    });
+
+    await expect(
+      adapter.generate({
+        apiKey: "test-key",
+        model: defaultLlmGatewayRegistry.models[2]!,
+        staticParts: ["static judge prefix"],
+        variablePart: "variable judge input",
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_api_key",
+      message: "Incorrect API key provided.",
+      retryable: false,
+    });
+  });
+
+  it("classifies non-JSON OpenAI error pages as request failures, not structured JSON failures", async () => {
+    const adapter = createOpenAIAdapter({
+      fetch: async () =>
+        new Response("<html>Bad gateway</html>", {
+          headers: {
+            "content-type": "text/html",
+          },
+          status: 502,
+        }),
+    });
+
+    await expect(
+      adapter.generate({
+        apiKey: "test-key",
+        model: defaultLlmGatewayRegistry.models[2]!,
+        staticParts: ["static judge prefix"],
+        variablePart: "variable judge input",
+      }),
+    ).rejects.toMatchObject({
+      code: "openai_http_502",
+      message: "OpenAI structured-output request failed.",
+      retryable: true,
+    });
+  });
+
+  it("classifies invalid OpenAI output text as invalid structured JSON", async () => {
+    const adapter = createOpenAIAdapter({
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            output: [
+              {
+                content: [
+                  {
+                    text: "{not valid json",
+                    type: "output_text",
+                  },
+                ],
+                type: "message",
+              },
+            ],
+          }),
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+            status: 200,
+          },
+        ),
+    });
+
+    await expect(
+      adapter.generate({
+        apiKey: "test-key",
+        model: defaultLlmGatewayRegistry.models[2]!,
+        staticParts: ["static judge prefix"],
+        variablePart: "variable judge input",
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_json",
+      message: "OpenAI returned invalid structured JSON.",
     });
   });
 

@@ -67,7 +67,7 @@ const promptRolePattern = /\b(act as|you are|system prompt|developer prompt)\b/i
 const unsafeInstructionPattern =
   /\b(steal|exfiltrate|phish|malware|ransomware|keylogger|bypass authentication|evade detection|credential stuffing|scrape private|doxx?)\b/i;
 const sensitiveDataPattern =
-  /\b(ssn|social security|credit card|password|api key|private key|secret|token|patient data|personal data|pii)\b/i;
+  /\b(ssn|social security|credit card|password|api key|private key|client[-_\s]?secret|app[-_\s]?secret|access[-_\s]?token|auth[-_\s]?token|api[-_\s]?token|session[-_\s]?token|patient data|personal data|pii)\b/i;
 
 export function evaluatePromptStructure(prompt: string): PromptStructureChecklist {
   const analysis = analyzePrompt(prompt);

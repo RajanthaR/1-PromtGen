@@ -17,6 +17,7 @@ import type {
   EnhancementQualityChecklist,
 } from "./enhancement";
 import { enhancementModes, validateEnhancementOutput } from "./enhancement";
+import { LlmGatewayError } from "./llm-gateway";
 import type { JsonLogger } from "./logger";
 import { evaluatePromptStructure } from "./quality-checklist";
 import { createApiRequestHandler } from "./server";
@@ -364,6 +365,42 @@ describe("enhancement endpoints", () => {
         status: "failed",
         suggestions: [],
         error: "judge_failed",
+      });
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("reports judge configuration failures as unavailable", async () => {
+    const gateway = new FakeGateway({
+      judgeError: new LlmGatewayError(
+        "configuration_error",
+        "LLM judge provider API key is not configured.",
+      ),
+    });
+    const server = await listen({
+      env: {
+        ...testEnv,
+        promptQualityJudgeEnabled: true,
+      },
+      gateway,
+    });
+
+    try {
+      const response = await postJson(server, "/enhance/enhance", {
+        raw_prompt: "Write a launch email for teachers.",
+        options: {
+          enable_llm_judge: true,
+        },
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.result.enhanced_prompt).toBe("Enhanced enhance prompt.");
+      expect(response.body.quality_judge).toEqual({
+        enabled: true,
+        status: "unavailable",
+        suggestions: [],
+        error: "judge_not_configured",
       });
     } finally {
       await close(server);

@@ -54,6 +54,17 @@ export function createOpenAIAdapter(
           signal: controller.signal,
         });
 
+        const isJson = response.headers.get("content-type")?.includes("application/json");
+        const payload = isJson ? ((await response.json()) as unknown) : null;
+
+        if (isOpenAIResponse(payload) && payload.error) {
+          throw new LlmProviderError(
+            payload.error.type ?? `openai_http_${response.status}`,
+            payload.error.message ?? "OpenAI returned an error response.",
+            response.status >= 500 || response.status === 429,
+          );
+        }
+
         if (!response.ok) {
           throw new LlmProviderError(
             `openai_http_${response.status}`,
@@ -61,8 +72,6 @@ export function createOpenAIAdapter(
             response.status >= 500 || response.status === 429,
           );
         }
-
-        const payload = (await response.json()) as unknown;
 
         if (!isOpenAIResponse(payload)) {
           throw new LlmProviderError(
@@ -85,8 +94,22 @@ export function createOpenAIAdapter(
           throw new LlmProviderError("empty_response", "OpenAI returned an empty response.");
         }
 
+        let result: unknown;
+        try {
+          result = JSON.parse(text) as unknown;
+        } catch (parseError) {
+          throw new LlmProviderError(
+            "invalid_json",
+            "OpenAI returned invalid structured JSON.",
+            true,
+            {
+              cause: parseError,
+            },
+          );
+        }
+
         return {
-          result: JSON.parse(text) as unknown,
+          result,
           text,
           usage: {
             cachedInputTokens: payload.usage?.input_tokens_details?.cached_tokens ?? 0,
@@ -98,17 +121,6 @@ export function createOpenAIAdapter(
       } catch (error) {
         if (error instanceof LlmProviderError) {
           throw error;
-        }
-
-        if (error instanceof SyntaxError) {
-          throw new LlmProviderError(
-            "invalid_json",
-            "OpenAI returned invalid structured JSON.",
-            true,
-            {
-              cause: error,
-            },
-          );
         }
 
         throw new LlmProviderError("openai_request_failed", "OpenAI request failed.", true, {
