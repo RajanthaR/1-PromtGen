@@ -791,17 +791,25 @@ async function resolveSelectedContextForGateway(input: {
       ok: true,
       snippets: ordered as EnhancementSelectedContextSnippet[],
     };
-  } catch {
-    return {
-      ok: false,
-      statusCode: 400,
-      body: {
-        error: "selected_context_not_found",
-        message: "One or more selected context snippets were not found.",
-        raw_prompt: input.input.raw_prompt,
-      },
-    };
+  } catch (error) {
+    if (isNotFoundContextError(error)) {
+      return {
+        ok: false,
+        statusCode: 400,
+        body: {
+          error: "selected_context_not_found",
+          message: "One or more selected context snippets were not found.",
+          raw_prompt: input.input.raw_prompt,
+        },
+      };
+    }
+
+    throw error;
   }
+}
+
+function isNotFoundContextError(error: unknown): error is Error & { code: "not_found" } {
+  return error instanceof Error && "code" in error && error.code === "not_found";
 }
 
 function buildGatewayOptions(input: {

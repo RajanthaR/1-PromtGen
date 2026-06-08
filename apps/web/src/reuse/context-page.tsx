@@ -61,6 +61,7 @@ export function ContextPage() {
       setStatus("Snippet updated.");
     } else {
       setSnippets((currentSnippets) => createContextSnippet(currentSnippets, nextDraft));
+      newSnippet();
       setStatus("Snippet created.");
     }
   }

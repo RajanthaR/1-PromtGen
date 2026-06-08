@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { PromptGenDatabase } from "@promptgen/db";
 import { folders, promptTags, promptVersions, prompts, tags } from "@promptgen/db/schema";
@@ -190,12 +190,22 @@ export class PostgresPromptLibraryStore implements PromptLibraryPort {
 
   async listSavedPrompts(userId: string): Promise<SavedPromptSummary[]> {
     const rows = await this.db
-      .select({ id: prompts.id })
+      .select({
+        createdAt: prompts.createdAt,
+        currentVersionId: prompts.currentVersionId,
+        folderId: prompts.folderId,
+        id: prompts.id,
+        pinned: prompts.pinned,
+        tagName: tags.name,
+        title: prompts.title,
+      })
       .from(prompts)
+      .leftJoin(promptTags, eq(promptTags.promptId, prompts.id))
+      .leftJoin(tags, eq(tags.id, promptTags.tagId))
       .where(and(eq(prompts.userId, userId), isNull(prompts.deletedAt)))
-      .orderBy(desc(prompts.pinned), desc(prompts.createdAt));
+      .orderBy(desc(prompts.pinned), desc(prompts.createdAt), asc(tags.name));
 
-    return Promise.all(rows.map((row) => this.requirePromptSummary(userId, row.id)));
+    return summarizePromptRows(userId, rows);
   }
 
   async listPromptVersions(userId: string, promptId: string): Promise<PromptVersionSummary[]> {
@@ -329,7 +339,34 @@ export class PostgresPromptLibraryStore implements PromptLibraryPort {
       LIMIT ${limit}
     `);
 
-    return Promise.all(rows.map((row) => this.requirePromptSummary(userId, row.id)));
+    const ids = rows.map((row) => row.id);
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const promptRows = await this.db
+      .select({
+        createdAt: prompts.createdAt,
+        currentVersionId: prompts.currentVersionId,
+        folderId: prompts.folderId,
+        id: prompts.id,
+        pinned: prompts.pinned,
+        tagName: tags.name,
+        title: prompts.title,
+      })
+      .from(prompts)
+      .leftJoin(promptTags, eq(promptTags.promptId, prompts.id))
+      .leftJoin(tags, eq(tags.id, promptTags.tagId))
+      .where(and(eq(prompts.userId, userId), inArray(prompts.id, ids)))
+      .orderBy(desc(prompts.pinned), desc(prompts.createdAt), asc(tags.name));
+    const promptMap = new Map(
+      summarizePromptRows(userId, promptRows).map((summary) => [summary.id, summary]),
+    );
+
+    return ids
+      .map((id) => promptMap.get(id))
+      .filter((summary): summary is SavedPromptSummary => summary !== undefined);
   }
 
   async exportPrompt(
@@ -602,6 +639,49 @@ function toSections(value: unknown): Record<string, unknown> {
   }
 
   return {};
+}
+
+function summarizePromptRows(
+  userId: string,
+  rows: Array<{
+    createdAt: Date;
+    currentVersionId: string | null;
+    folderId: string | null;
+    id: string;
+    pinned: boolean;
+    tagName: string | null;
+    title: string;
+  }>,
+): SavedPromptSummary[] {
+  const promptMap = new Map<string, SavedPromptSummary>();
+
+  for (const row of rows) {
+    if (!row.currentVersionId) {
+      continue;
+    }
+
+    let summary = promptMap.get(row.id);
+
+    if (!summary) {
+      summary = {
+        createdAt: row.createdAt,
+        id: row.id,
+        latestVersionId: row.currentVersionId,
+        pinned: row.pinned,
+        tags: [],
+        title: row.title,
+        userId,
+        ...(row.folderId ? { folderId: row.folderId } : {}),
+      };
+      promptMap.set(row.id, summary);
+    }
+
+    if (row.tagName) {
+      summary.tags.push(row.tagName);
+    }
+  }
+
+  return Array.from(promptMap.values());
 }
 
 function slugify(title: string): string {

@@ -26,7 +26,11 @@ const initialFilters: TemplateFilters = {
 export function TemplatesPage() {
   const [filters, setFilters] = useState<TemplateFilters>(initialFilters);
   const [selectedTemplateId, setSelectedTemplateId] = useState(seedTemplates[0]?.id ?? "");
-  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+  const [variableValues, setVariableValues] = useState<Record<string, string>>(() => {
+    const initialTemplate = seedTemplates[0];
+
+    return initialTemplate ? defaultVariableValues(initialTemplate) : {};
+  });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [recentTemplateIds, setRecentTemplateIds] = useState<string[]>([]);

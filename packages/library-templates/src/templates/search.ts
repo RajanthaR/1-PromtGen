@@ -90,15 +90,14 @@ function scoreKeywordMatch(template: PublicTemplate, keywordTerms: string[]): nu
   let score = 0;
 
   for (const term of keywordTerms) {
-    const matched = weightedFields.some((field) => {
-      const fieldMatched = normalizeSearchText(field.text).includes(term);
+    let matched = false;
 
-      if (fieldMatched) {
+    for (const field of weightedFields) {
+      if (normalizeSearchText(field.text).includes(term)) {
         score += field.weight;
+        matched = true;
       }
-
-      return fieldMatched;
-    });
+    }
 
     if (!matched) {
       return 0;

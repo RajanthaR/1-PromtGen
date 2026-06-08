@@ -122,6 +122,30 @@ describe("library-templates public boundary", () => {
     ]);
   });
 
+  it("ranks keyword matches by every matching weighted field", async () => {
+    const catalog = new InMemoryTemplateCatalog([
+      {
+        ...placeholderTemplates[0]!,
+        body: "General body.",
+        description: "General description.",
+        tags: ["general"],
+        title: "Launch",
+      },
+      {
+        ...placeholderTemplates[1]!,
+        body: "Write a launch support reply.",
+        description: "Launch support reply.",
+        tags: ["launch", "support"],
+        title: "Support Reply",
+      },
+    ]);
+
+    await expect(catalog.listPublicTemplates({ keyword: "launch" })).resolves.toEqual([
+      expect.objectContaining({ id: "tmpl_support_reply" }),
+      expect.objectContaining({ id: "tmpl_launch_email" }),
+    ]);
+  });
+
   it("rejects invalid template content and accepts placeholder fixture content", () => {
     expect(validateTemplateContent(placeholderTemplates)).toMatchObject({
       valid: true,
