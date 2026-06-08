@@ -42,6 +42,19 @@ export interface EnhancementGatewayRequest {
   options: Record<string, unknown>;
 }
 
+export interface EnhancementSelectedContextSnippet {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface EnhancementContextPort {
+  listSelectedSnippets(
+    userId: string,
+    snippetIds: string[],
+  ): Promise<EnhancementSelectedContextSnippet[]>;
+}
+
 export interface EnhancementGatewayResult {
   result: unknown;
   meta: {
@@ -88,6 +101,7 @@ export interface EnhancementGateway {
 }
 
 export interface EnhancementHandlerDependencies {
+  context?: EnhancementContextPort;
   gateway: EnhancementGateway;
   history?: HistoryUsagePort;
   llmJudgeEnabled?: boolean;
@@ -120,6 +134,21 @@ type EnhancementJudgeResponse =
       status: "failed" | "unavailable";
       suggestions: [];
       error: "judge_failed" | "judge_not_configured";
+    };
+
+type ContextResolutionResult =
+  | {
+      ok: true;
+      snippets: EnhancementSelectedContextSnippet[];
+    }
+  | {
+      ok: false;
+      statusCode: 400 | 503;
+      body: {
+        error: string;
+        message: string;
+        raw_prompt: string;
+      };
     };
 
 interface ClarificationCheck {
@@ -227,6 +256,7 @@ export async function handleEnhancementRequest(
     writeJson(response, 200, {
       result,
       quality_checklist: qualityChecklist,
+      used_context: [],
       meta: {
         provider: null,
         model: null,
@@ -243,21 +273,39 @@ export async function handleEnhancementRequest(
     return;
   }
 
+  const selectedContext = await resolveSelectedContextForGateway({
+    dependencies,
+    input: parsedRequest,
+    userId,
+  });
+
+  if (!selectedContext.ok) {
+    writeJson(response, selectedContext.statusCode, selectedContext.body);
+    dependencies.logger.warn("api.enhancement_request", {
+      mode,
+      statusCode: selectedContext.statusCode,
+      error: selectedContext.body.error,
+    });
+    return;
+  }
+
   try {
     const gatewayResult = await dependencies.gateway.enhance({
       raw_prompt: parsedRequest.raw_prompt,
       mode,
       target_model: parsedRequest.target_model,
       prompt_type: parsedRequest.prompt_type,
-      options: {
-        ...parsedRequest.options,
-        ...(mode === "refine" && clarificationSkipped
-          ? {
-              clarification_skipped: true,
-              placeholders: clarification.placeholders,
-            }
-          : {}),
-      },
+      options: buildGatewayOptions({
+        options: parsedRequest.options,
+        selectedContextSnippets: selectedContext.snippets,
+        refineOptions:
+          mode === "refine" && clarificationSkipped
+            ? {
+                clarification_skipped: true,
+                placeholders: clarification.placeholders,
+              }
+            : {},
+      }),
     });
     const validation = validateEnhancementOutput(gatewayResult.result);
 
@@ -304,6 +352,7 @@ export async function handleEnhancementRequest(
     writeJson(response, 200, {
       result,
       quality_checklist: qualityChecklist,
+      used_context: selectedContext.snippets,
       meta: gatewayResult.meta,
       quality_judge: qualityJudge,
     });
@@ -598,6 +647,17 @@ async function parseEnhancementRequest(
     };
   }
 
+  const options: Record<string, unknown> = body.options === undefined ? {} : body.options;
+  const contextIdsValidation = validateContextIdsOption(options);
+
+  if (!contextIdsValidation.valid) {
+    return {
+      error: "invalid_request",
+      message: contextIdsValidation.message,
+      raw_prompt: rawPrompt,
+    };
+  }
+
   if (body.user_id !== undefined && typeof body.user_id !== "string") {
     return {
       error: "invalid_request",
@@ -613,7 +673,7 @@ async function parseEnhancementRequest(
     raw_prompt: rawPrompt,
     target_model: targetModel || "auto",
     prompt_type: "text",
-    options: body.options ?? {},
+    options,
     ...(userId ? { user_id: userId } : {}),
   };
 }
@@ -670,6 +730,131 @@ function isClarificationSkipped(options: Record<string, unknown>): boolean {
 
 function shouldRunLlmJudge(options: Record<string, unknown>): boolean {
   return options.enable_llm_judge === true;
+}
+
+async function resolveSelectedContextForGateway(input: {
+  dependencies: EnhancementHandlerDependencies;
+  input: EnhancementHttpRequest;
+  userId: string | null;
+}): Promise<ContextResolutionResult> {
+  const selectedIds = readContextIds(input.input.options);
+
+  if (selectedIds.length === 0) {
+    return { ok: true, snippets: [] };
+  }
+
+  if (!input.userId) {
+    return {
+      ok: false,
+      statusCode: 400,
+      body: {
+        error: "user_id_required_for_context",
+        message: "user_id or x-user-id is required when context_ids are selected.",
+        raw_prompt: input.input.raw_prompt,
+      },
+    };
+  }
+
+  if (!input.dependencies.context) {
+    return {
+      ok: false,
+      statusCode: 503,
+      body: {
+        error: "context_not_configured",
+        message: "Context storage is not configured for selected context_ids.",
+        raw_prompt: input.input.raw_prompt,
+      },
+    };
+  }
+
+  try {
+    const resolved = await input.dependencies.context.listSelectedSnippets(
+      input.userId,
+      selectedIds,
+    );
+    const resolvedById = new Map(resolved.map((snippet) => [snippet.id, snippet]));
+    const ordered = selectedIds.map((snippetId) => resolvedById.get(snippetId));
+
+    if (ordered.some((snippet) => snippet === undefined)) {
+      return {
+        ok: false,
+        statusCode: 400,
+        body: {
+          error: "selected_context_not_found",
+          message: "One or more selected context snippets were not found.",
+          raw_prompt: input.input.raw_prompt,
+        },
+      };
+    }
+
+    return {
+      ok: true,
+      snippets: ordered as EnhancementSelectedContextSnippet[],
+    };
+  } catch (error) {
+    if (isNotFoundContextError(error)) {
+      return {
+        ok: false,
+        statusCode: 400,
+        body: {
+          error: "selected_context_not_found",
+          message: "One or more selected context snippets were not found.",
+          raw_prompt: input.input.raw_prompt,
+        },
+      };
+    }
+
+    throw error;
+  }
+}
+
+function isNotFoundContextError(error: unknown): error is Error & { code: "not_found" } {
+  return error instanceof Error && "code" in error && error.code === "not_found";
+}
+
+function buildGatewayOptions(input: {
+  options: Record<string, unknown>;
+  refineOptions: Record<string, unknown>;
+  selectedContextSnippets: EnhancementSelectedContextSnippet[];
+}): Record<string, unknown> {
+  const { context_ids: _contextIds, context_snippets: _contextSnippets, ...rest } = input.options;
+  const contextBodies = input.selectedContextSnippets.map((snippet) => snippet.body);
+
+  return {
+    ...rest,
+    ...input.refineOptions,
+    ...(contextBodies.length > 0 ? { context_snippets: contextBodies } : {}),
+  };
+}
+
+function validateContextIdsOption(
+  options: Record<string, unknown>,
+): { valid: true } | { valid: false; message: string } {
+  const contextIds = options.context_ids;
+
+  if (contextIds === undefined) {
+    return { valid: true };
+  }
+
+  if (!Array.isArray(contextIds) || contextIds.some((snippetId) => typeof snippetId !== "string")) {
+    return { valid: false, message: "options.context_ids must be a string array when provided." };
+  }
+
+  if (contextIds.some((snippetId) => !snippetId.trim())) {
+    return { valid: false, message: "options.context_ids must not include blank ids." };
+  }
+
+  return { valid: true };
+}
+
+function readContextIds(options: Record<string, unknown>): string[] {
+  const contextIds = options.context_ids;
+
+  if (!Array.isArray(contextIds)) {
+    return [];
+  }
+
+  return Array.from(new Set(contextIds.map((snippetId) => String(snippetId).trim())));
 }
 
 async function recordOperation(input: {

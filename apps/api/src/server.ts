@@ -7,8 +7,10 @@ import { foundationSchemaVersion, type HealthPayload, type ServiceStatus } from 
 import {
   handleEnhancementRequest,
   isEnhancementMode,
+  type EnhancementContextPort,
   type EnhancementGateway,
 } from "./enhancement";
+import { handleHistoryRequest } from "./history";
 import type { JsonLogger } from "./logger";
 import { createJsonLogger } from "./logger";
 import { createRedisHealthProbe, type RedisHealthProbe } from "./redis";
@@ -44,6 +46,7 @@ export async function createHealthPayload(
 }
 
 export function createApiRequestHandler(options: {
+  context?: EnhancementContextPort;
   env?: PromptGenEnv;
   gateway?: EnhancementGateway;
   history?: HistoryUsagePort;
@@ -51,13 +54,14 @@ export function createApiRequestHandler(options: {
   redis?: RedisHealthProbe;
 }): (request: IncomingMessage, response: ServerResponse) => void {
   const env = options.env ?? defaultEnv;
+  const context = options.context;
   const gateway = options.gateway ?? createUnconfiguredGateway();
   const history = options.history;
   const logger = options.logger ?? createJsonLogger();
   const redis = options.redis ?? createRedisHealthProbe(env);
 
   return (request, response) => {
-    void handleApiRequest(request, response, env, logger, redis, gateway, history);
+    void handleApiRequest(request, response, env, logger, redis, gateway, history, context);
   };
 }
 
@@ -69,6 +73,7 @@ async function handleApiRequest(
   redis?: RedisHealthProbe,
   gateway?: EnhancementGateway,
   history?: HistoryUsagePort,
+  context?: EnhancementContextPort,
 ): Promise<void> {
   const method = request.method ?? "GET";
   const url = new URL(request.url ?? "/", "http://localhost");
@@ -84,6 +89,12 @@ async function handleApiRequest(
     return;
   }
 
+  if (
+    await handleHistoryRequest(request, response, url, { logger, ...(history ? { history } : {}) })
+  ) {
+    return;
+  }
+
   const enhancementMatch = /^\/enhance\/([^/]+)$/.exec(url.pathname);
 
   if (enhancementMatch) {
@@ -91,6 +102,7 @@ async function handleApiRequest(
 
     if (isEnhancementMode(mode) && gateway) {
       await handleEnhancementRequest(request, response, mode, {
+        ...(context ? { context } : {}),
         gateway,
         logger,
         llmJudgeEnabled: env.promptQualityJudgeEnabled,

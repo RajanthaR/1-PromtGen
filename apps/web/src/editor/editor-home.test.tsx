@@ -14,6 +14,24 @@ describe("EditorHome", () => {
     expect(markup).toContain("Add a prompt to enhance.");
   });
 
+  it("hydrates a send-to-editor draft as editable input", () => {
+    const markup = renderToStaticMarkup(
+      createElement(EditorHome, {
+        initialDraft: {
+          contextIds: [],
+          mode: "enhance",
+          prompt: "Rewrite this launch prompt for admins.",
+          source: "template",
+          targetModel: "auto",
+          tone: "professional",
+        },
+      }),
+    );
+
+    expect(markup).toContain("Rewrite this launch prompt for admins.");
+    expect(markup).toContain("Ready to run.");
+  });
+
   it("exposes the canonical loading text for the live state", () => {
     expect(editorHomeTestIds.loadingText).toBe("Structuring your prompt…");
   });

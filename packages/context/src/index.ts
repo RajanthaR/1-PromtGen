@@ -35,3 +35,6 @@ export interface ContextPort {
   listSnippets(userId: string): Promise<ContextSnippet[]>;
   listSelectedSnippets(userId: string, snippetIds: string[]): Promise<SelectedContextSnippet[]>;
 }
+
+export { InMemoryContextStore } from "./in-memory-store";
+export { ContextLibraryError, createContextService, type ContextStore } from "./service";

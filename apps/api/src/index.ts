@@ -2,6 +2,8 @@ import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 
 import { loadPromptGenEnv, type PromptGenEnv } from "@promptgen/config/env";
+import { createDb, createSqlClient } from "@promptgen/db";
+import { createPostgresHistoryUsageStore } from "@promptgen/history-usage";
 
 import { createDefaultLlmGateway, type LlmTraceEvent } from "./llm-gateway";
 import { createJsonLogger, type JsonLogger } from "./logger";
@@ -18,13 +20,22 @@ export function startApi(
     env,
     reporter: createLoggerLlmReporter(logger),
   });
-  const server = createServer(createApiRequestHandler({ env, gateway, logger }));
+  const sql = env.databaseUrl ? createSqlClient(env.databaseUrl) : null;
+  const history = sql ? createPostgresHistoryUsageStore(createDb(sql)) : undefined;
+  const server = createServer(
+    createApiRequestHandler({ env, gateway, logger, ...(history ? { history } : {}) }),
+  );
 
   server.on("error", (error) => {
     logger.error("api.server_error", {
       errorName: error.name,
       errorMessage: error.message,
     });
+  });
+  server.on("close", () => {
+    if (sql) {
+      void sql.end();
+    }
   });
 
   server.listen(env.apiPort, () => {

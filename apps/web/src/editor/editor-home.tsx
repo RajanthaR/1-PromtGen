@@ -7,6 +7,8 @@ import {
   type EditorSubmitPayload,
   createInitialEditorShellState,
 } from "./editor-shell";
+import { contextSnippetOptions } from "./editor-options";
+import type { EditorDraft } from "./editor-draft";
 import { createEnhancementClient, enhancementProgressText } from "./enhancement-client";
 import {
   createAnsweredRefinePayload,
@@ -25,10 +27,21 @@ import type { EnhancementRequestPayload, SelectedContextSnippet } from "./types"
 
 const client = createEnhancementClient();
 
-export function EditorHome() {
-  const [flowState, setFlowState] = useState<EnhancementFlowState>(() =>
-    createInitialEnhancementState(),
-  );
+export function EditorHome({ initialDraft }: { initialDraft?: EditorDraft | null }) {
+  const [flowState, setFlowState] = useState<EnhancementFlowState>(() => {
+    const selectedContextSnippets =
+      initialDraft?.contextIds && initialDraft.contextIds.length > 0
+        ? contextSnippetOptions.filter((snippet) => initialDraft.contextIds.includes(snippet.id))
+        : [];
+
+    return createInitialEnhancementState({
+      mode: initialDraft?.mode ?? "enhance",
+      rawPrompt: initialDraft?.prompt ?? "",
+      selectedContextSnippets,
+      targetModel: initialDraft?.targetModel ?? "auto",
+      tone: initialDraft?.tone ?? "neutral",
+    });
+  });
   const [copyStatusMessage, setCopyStatusMessage] = useState("");
   const [saveStatusMessage, setSaveStatusMessage] = useState("");
   const activeRequestId = useRef(0);
@@ -152,7 +165,7 @@ export function EditorHome() {
   );
 
   return (
-    <main style={styles.page}>
+    <main id="main-content" style={styles.page}>
       <div style={styles.layout}>
         <EditorShell initialState={editorInitialState} onSubmit={submitEditor} />
         <EditorStatePanel

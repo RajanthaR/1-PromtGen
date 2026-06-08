@@ -11,5 +11,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --config ../../vitest.config.ts"
   },
+  "dependencies": {
+    "@promptgen/db": "workspace:*",
+    "drizzle-orm": "^0.45.2"
+  },
   "devDependencies": {}
 }
