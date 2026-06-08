@@ -16,3 +16,22 @@ body {
 main {
   min-height: 100vh;
 }
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #0f766e;
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.skip-link:focus-visible {
+  top: 0.75rem !important;
+}

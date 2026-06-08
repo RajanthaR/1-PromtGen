@@ -12,9 +12,11 @@ import { describe, expect, it } from "vitest";
 import type {
   EnhancementGateway,
   EnhancementGatewayRequest,
+  EnhancementContextPort,
   EnhancementJudgeGatewayRequest,
   EnhancementOutput,
   EnhancementQualityChecklist,
+  EnhancementSelectedContextSnippet,
 } from "./enhancement";
 import { enhancementModes, validateEnhancementOutput } from "./enhancement";
 import { LlmGatewayError } from "./llm-gateway";
@@ -33,6 +35,7 @@ const testEnv = {
 interface TestEnhancementResponseBody {
   result: EnhancementOutput;
   quality_checklist: EnhancementQualityChecklist;
+  used_context: EnhancementSelectedContextSnippet[];
   meta: {
     provider: string | null;
     model: string | null;
@@ -118,6 +121,54 @@ describe("enhancement endpoints", () => {
           saved: false,
         },
       });
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("resolves selected context ids server-side and never forwards unselected context", async () => {
+    const gateway = new FakeGateway();
+    const selectedContext = {
+      body: "Selected audience: math teachers.",
+      id: "ctx_selected",
+      title: "Audience",
+    } satisfies EnhancementSelectedContextSnippet;
+    const unselectedContext = {
+      body: "NEVER_SEND_THIS_UNSELECTED_CONTEXT",
+      id: "ctx_unselected",
+      title: "Private pricing",
+    } satisfies EnhancementSelectedContextSnippet;
+    const context = {
+      async listSelectedSnippets() {
+        return [selectedContext, unselectedContext];
+      },
+    } satisfies EnhancementContextPort;
+    const server = await listen({ context, gateway });
+
+    try {
+      const response = await postJson(server, "/enhance/enhance", {
+        raw_prompt: "Write a launch email for the new lesson-planning feature.",
+        options: {
+          context_ids: ["ctx_selected"],
+          context_snippets: [
+            "Selected audience: math teachers.",
+            "NEVER_SEND_THIS_UNSELECTED_CONTEXT",
+          ],
+          tone: "friendly",
+        },
+        user_id: "user-123",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.used_context).toEqual([selectedContext]);
+      expect(gateway.requests).toHaveLength(1);
+      expect(gateway.requests[0]?.options).toMatchObject({
+        context_snippets: ["Selected audience: math teachers."],
+        tone: "friendly",
+      });
+      expect(JSON.stringify(gateway.requests[0])).not.toContain(
+        "NEVER_SEND_THIS_UNSELECTED_CONTEXT",
+      );
     } finally {
       await close(server);
     }
@@ -496,6 +547,13 @@ class FakeHistory implements HistoryUsagePort {
     return [];
   }
 
+  async getPromptHistoryEntry(
+    _userId: string,
+    _historyEntryId: string,
+  ): Promise<PromptOperationRecord | null> {
+    return null;
+  }
+
   async deleteHistoryEntry(_userId: string, _historyEntryId: string): Promise<void> {
     return undefined;
   }
@@ -506,6 +564,7 @@ class FakeHistory implements HistoryUsagePort {
 }
 
 async function listen(input: {
+  context?: EnhancementContextPort;
   env?: PromptGenEnv;
   gateway: EnhancementGateway;
   history?: HistoryUsagePort;
@@ -523,6 +582,7 @@ async function listen(input: {
   } satisfies JsonLogger;
   const server = createServer(
     createApiRequestHandler({
+      ...(input.context ? { context: input.context } : {}),
       env: input.env ?? testEnv,
       gateway: input.gateway,
       logger,
