@@ -21,12 +21,24 @@ export async function POST(
 
   try {
     const requestBody = await request.text();
+    const headers = new Headers({
+      "content-type": request.headers.get("content-type") ?? "application/json",
+    });
+    const authorization = request.headers.get("authorization");
+    const sessionId = request.headers.get("x-session-id");
+
+    if (authorization) {
+      headers.set("authorization", authorization);
+    }
+
+    if (sessionId) {
+      headers.set("x-session-id", sessionId);
+    }
+
     const apiResponse = await fetch(`${apiBaseUrl}/enhance/${mode}`, {
       body: requestBody,
       cache: "no-store",
-      headers: {
-        "content-type": request.headers.get("content-type") ?? "application/json",
-      },
+      headers,
       method: "POST",
     });
     const body = await apiResponse.text();

@@ -5,8 +5,18 @@ import { loadPromptGenEnv, type PromptGenEnv } from "@promptgen/config/env";
 import { createDb, createSqlClient } from "@promptgen/db";
 import { createPostgresHistoryUsageStore } from "@promptgen/history-usage";
 
+import {
+  createAesGcmByoKeyCipher,
+  createAuthBillingService,
+  PostgresAuthBillingStore,
+} from "./auth-billing";
 import { createDefaultLlmGateway, type LlmTraceEvent } from "./llm-gateway";
 import { createJsonLogger, type JsonLogger } from "./logger";
+import {
+  createCompositeLlmTraceReporter,
+  createInMemoryLlmObservabilityStore,
+} from "./observability";
+import { createRedisLlmResultCache } from "./redis";
 import { createApiRequestHandler } from "./server";
 
 export * from "./llm-gateway";
@@ -16,14 +26,33 @@ export function startApi(
 ): ReturnType<typeof createServer> {
   const env = options.env ?? loadPromptGenEnv();
   const logger = options.logger ?? createJsonLogger();
+  const observability = createInMemoryLlmObservabilityStore();
+  const resultCache = createRedisLlmResultCache(env);
   const gateway = createDefaultLlmGateway({
     env,
-    reporter: createLoggerLlmReporter(logger),
+    reporter: createCompositeLlmTraceReporter(createLoggerLlmReporter(logger), observability),
+    ...(resultCache ? { resultCache } : {}),
   });
   const sql = env.databaseUrl ? createSqlClient(env.databaseUrl) : null;
-  const history = sql ? createPostgresHistoryUsageStore(createDb(sql)) : undefined;
+  const db = sql ? createDb(sql) : null;
+  const history = db ? createPostgresHistoryUsageStore(db) : undefined;
+  const billing = db
+    ? createAuthBillingService(new PostgresAuthBillingStore(db), {
+        ...(env.byoKeyEncryptionSecret
+          ? { byoKeyCipher: createAesGcmByoKeyCipher(env.byoKeyEncryptionSecret) }
+          : {}),
+        sessionTtlSeconds: env.authSessionTtlSeconds,
+      })
+    : undefined;
   const server = createServer(
-    createApiRequestHandler({ env, gateway, logger, ...(history ? { history } : {}) }),
+    createApiRequestHandler({
+      env,
+      gateway,
+      logger,
+      observability,
+      ...(billing ? { billing } : {}),
+      ...(history ? { history } : {}),
+    }),
   );
 
   server.on("error", (error) => {
@@ -70,6 +99,9 @@ function createLoggerLlmReporter(logger: JsonLogger): {
         cachedInputTokens: event.tokens.cachedInputTokens,
         inputTokens: event.tokens.inputTokens,
         outputTokens: event.tokens.outputTokens,
+        providerCacheHit: event.cache?.provider_cache_hit ?? false,
+        resultCacheHit: event.cache?.result_cache_hit ?? false,
+        inputTokensSaved: event.cache?.input_tokens_saved ?? 0,
       });
     },
   };

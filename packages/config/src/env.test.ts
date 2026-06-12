@@ -20,6 +20,7 @@ describe("loadPromptGenEnv", () => {
         AUTH_SESSION_TTL_SECONDS: "3600",
         GOOGLE_OAUTH_CLIENT_ID: "local-google-client-id",
         GOOGLE_OAUTH_CLIENT_SECRET: "replace-with-local-secret",
+        BYO_KEY_ENCRYPTION_SECRET: "replace-with-local-secret",
         LLM_JUDGE_PROVIDER_API_KEY: "replace-with-local-secret",
         LLM_PROVIDER_API_KEY: "replace-with-local-secret",
         NEXT_PUBLIC_APP_URL: "http://localhost:3000/",
@@ -45,6 +46,16 @@ describe("loadPromptGenEnv", () => {
     ).toMatchObject({
       llmJudgeProviderApiKey: "test-openai-key",
       promptQualityJudgeEnabled: true,
+    });
+  });
+
+  it("loads the optional BYO key encryption secret", () => {
+    expect(
+      loadPromptGenEnv({
+        BYO_KEY_ENCRYPTION_SECRET: "local-byo-secret",
+      }),
+    ).toMatchObject({
+      byoKeyEncryptionSecret: "local-byo-secret",
     });
   });
 

@@ -1,4 +1,11 @@
 export { LlmGatewayError } from "./errors";
+export {
+  createInMemoryLlmResultCache,
+  createLlmResultCacheKey,
+  defaultLlmResultCacheTtlSeconds,
+  type CachedPromptEnhancementOutput,
+  type LlmResultCache,
+} from "./cache";
 export { createDefaultLlmGateway, createLlmGateway, type LlmGateway } from "./gateway";
 export { createGeminiAdapter, buildGeminiRequestBody } from "./gemini-adapter";
 export { createOpenAIAdapter, buildOpenAIResponsesRequestBody } from "./openai-adapter";
@@ -11,6 +18,7 @@ export {
   validatePromptQualityJudgeResult,
 } from "./schema";
 export type {
+  LlmGatewayCacheMeta,
   LlmGatewayMeta,
   LlmProviderAdapter,
   LlmTraceEvent,

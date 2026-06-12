@@ -49,7 +49,7 @@ export function HistoryPage() {
                   key={entry.id}
                   style={{
                     ...listItemStyle,
-                    borderColor: isSelected ? "#173f35" : "#e5e7eb",
+                    border: isSelected ? "2px solid #173f35" : listItemStyle.border,
                   }}
                 >
                   <div style={rowBetweenStyle}>
@@ -59,6 +59,7 @@ export function HistoryPage() {
                         {entry.mode} | {entry.targetModel} | {entry.provider}/{entry.model}
                       </p>
                     </div>
+                    {isSelected ? <span style={selectedBadgeStyle}>Selected</span> : null}
                     <span style={entry.saved ? savedBadgeStyle : unsavedBadgeStyle}>
                       {entry.saved ? "Saved" : "Not saved"}
                     </span>
@@ -212,6 +213,15 @@ const sectionTitleStyle = {
   fontSize: "1.125rem",
   lineHeight: 1.3,
   margin: 0,
+} satisfies CSSProperties;
+
+const selectedBadgeStyle = {
+  border: "1px solid #173f35",
+  borderRadius: "999px",
+  color: "#173f35",
+  fontSize: "0.75rem",
+  fontWeight: 800,
+  padding: "0.2rem 0.5rem",
 } satisfies CSSProperties;
 
 const snippetStyle = {

@@ -15,13 +15,32 @@ import {
 
 export const planEnum = pgEnum("plan", ["free", "pro", "advanced"]);
 
-export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  email: text("email").notNull().unique(),
-  name: text("name"),
-  avatarUrl: text("avatar_url"),
-  plan: planEnum("plan").notNull().default("free"),
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    email: text("email").notNull().unique(),
+    name: text("name"),
+    avatarUrl: text("avatar_url"),
+    plan: planEnum("plan").notNull().default("free"),
+    emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("users_deleted_at_idx").on(table.deletedAt)],
+);
+
+export const userBillingSettings = pgTable("user_billing_settings", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  byoKeyEnabled: boolean("byo_key_enabled").notNull().default(false),
+  byoKeyProvider: text("byo_key_provider"),
+  byoKeyCiphertext: text("byo_key_ciphertext"),
+  byoKeyHint: text("byo_key_hint"),
+  byoKeyUpdatedAt: timestamp("byo_key_updated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const sessions = pgTable(
@@ -200,7 +219,11 @@ export const usageEvents = pgTable(
   (table) => [index("usage_events_user_id_created_at_idx").on(table.userId, table.createdAt)],
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
+  billingSettings: one(userBillingSettings, {
+    fields: [users.id],
+    references: [userBillingSettings.userId],
+  }),
   contextSnippets: many(contextSnippets),
   folders: many(folders),
   operations: many(operations),
@@ -208,6 +231,13 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   tags: many(tags),
   usageEvents: many(usageEvents),
+}));
+
+export const userBillingSettingsRelations = relations(userBillingSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userBillingSettings.userId],
+    references: [users.id],
+  }),
 }));
 
 export const promptsRelations = relations(prompts, ({ many, one }) => ({

@@ -9,6 +9,11 @@ import type {
 import type { PromptGenEnv } from "@promptgen/config/env";
 import { describe, expect, it } from "vitest";
 
+import {
+  createAesGcmByoKeyCipher,
+  createAuthBillingService,
+  InMemoryAuthBillingStore,
+} from "./auth-billing";
 import type {
   EnhancementGateway,
   EnhancementGatewayRequest,
@@ -22,7 +27,9 @@ import { enhancementModes, validateEnhancementOutput } from "./enhancement";
 import { LlmGatewayError } from "./llm-gateway";
 import type { JsonLogger } from "./logger";
 import { evaluatePromptStructure } from "./quality-checklist";
+import type { RateLimiter } from "./redis";
 import { createApiRequestHandler } from "./server";
+import type { SettingsBillingPort } from "./settings";
 
 const testEnv = {
   apiPort: 0,
@@ -46,6 +53,10 @@ interface TestEnhancementResponseBody {
   error?: string;
   message?: string;
   raw_prompt?: string;
+  limit?: number;
+  remaining?: number;
+  reset_at?: string;
+  retry_after_seconds?: number;
   quality_judge?: {
     enabled: boolean;
     status: string;
@@ -321,6 +332,201 @@ describe("enhancement endpoints", () => {
     }
   });
 
+  it("returns 429 before the gateway when the per-user rate limit is exceeded", async () => {
+    const gateway = new FakeGateway();
+    const rateLimiter = {
+      async check() {
+        return {
+          allowed: false,
+          limit: 2,
+          remaining: 0,
+          reset_at: "2026-06-09T10:01:00.000Z",
+          retry_after_seconds: 37,
+        };
+      },
+    } satisfies RateLimiter;
+    const server = await listen({ gateway, rateLimiter });
+
+    try {
+      const response = await postJson(server, "/enhance/enhance", {
+        raw_prompt: "Write a launch email for teachers.",
+        user_id: "user-123",
+      });
+
+      expect(response.status).toBe(429);
+      expect(response.body).toMatchObject({
+        error: "rate_limit_exceeded",
+        limit: 2,
+        raw_prompt: "Write a launch email for teachers.",
+        remaining: 0,
+        reset_at: "2026-06-09T10:01:00.000Z",
+        retry_after_seconds: 37,
+      });
+      expect(gateway.requests).toEqual([]);
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("blocks unverified free users before the gateway", async () => {
+    const gateway = new FakeGateway();
+    const store = new InMemoryAuthBillingStore();
+    const billing = createAuthBillingService(store, {
+      clock: () => new Date("2026-06-09T10:00:00.000Z"),
+    });
+
+    store.seedUser({
+      createdAt: new Date("2026-06-08T00:00:00.000Z"),
+      email: "unverified@example.com",
+      id: "user-unverified",
+      plan: "free",
+    });
+    store.seedSession({
+      createdAt: new Date("2026-06-09T00:00:00.000Z"),
+      expiresAt: new Date("2026-06-10T00:00:00.000Z"),
+      id: "session-unverified",
+      userId: "user-unverified",
+    });
+    const server = await listen({ billing, gateway });
+
+    try {
+      const response = await postJson(
+        server,
+        "/enhance/enhance",
+        {
+          raw_prompt: "Write a launch email for teachers.",
+        },
+        {
+          "x-session-id": "session-unverified",
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body).toMatchObject({
+        error: "email_verification_required",
+        raw_prompt: "Write a launch email for teachers.",
+      });
+      expect(gateway.requests).toEqual([]);
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("blocks verified free users at the quota limit before the gateway", async () => {
+    const gateway = new FakeGateway();
+    const store = new InMemoryAuthBillingStore();
+    const billing = createAuthBillingService(store, {
+      clock: () => new Date("2026-06-09T10:00:00.000Z"),
+    });
+
+    store.seedUser({
+      createdAt: new Date("2026-06-08T00:00:00.000Z"),
+      email: "verified@example.com",
+      emailVerifiedAt: new Date("2026-06-08T00:05:00.000Z"),
+      id: "user-verified",
+      plan: "free",
+    });
+    store.seedSession({
+      createdAt: new Date("2026-06-09T00:00:00.000Z"),
+      expiresAt: new Date("2026-06-10T00:00:00.000Z"),
+      id: "session-verified",
+      userId: "user-verified",
+    });
+
+    for (let index = 0; index < 10; index += 1) {
+      await store.recordUsageEvent({
+        createdAt: new Date("2026-06-09T09:00:00.000Z"),
+        kind: "prompt_enhancement",
+        quantity: 1,
+        userId: "user-verified",
+      });
+    }
+
+    const server = await listen({ billing, gateway });
+
+    try {
+      const response = await postJson(
+        server,
+        "/enhance/enhance",
+        {
+          raw_prompt: "Write a launch email for teachers.",
+        },
+        {
+          "x-session-id": "session-verified",
+        },
+      );
+
+      expect(response.status).toBe(402);
+      expect(response.body).toMatchObject({
+        error: "quota_exceeded",
+        raw_prompt: "Write a launch email for teachers.",
+      });
+      expect(gateway.requests).toEqual([]);
+    } finally {
+      await close(server);
+    }
+  });
+
+  it("forwards paid BYO provider credentials without consuming platform quota", async () => {
+    const gateway = new FakeGateway();
+    const store = new InMemoryAuthBillingStore();
+    const billing = createAuthBillingService(store, {
+      byoKeyCipher: createAesGcmByoKeyCipher("test-byo-key-encryption-secret"),
+      clock: () => new Date("2026-06-09T10:00:00.000Z"),
+    });
+
+    store.seedUser({
+      createdAt: new Date("2026-06-08T00:00:00.000Z"),
+      email: "pro@example.com",
+      id: "user-pro",
+      plan: "pro",
+    });
+    store.seedSession({
+      createdAt: new Date("2026-06-09T00:00:00.000Z"),
+      expiresAt: new Date("2026-06-10T00:00:00.000Z"),
+      id: "session-pro",
+      userId: "user-pro",
+    });
+    await billing.saveByoApiKey("session-pro", {
+      apiKey: "gemini-byo-secret-1234",
+      provider: "gemini",
+    });
+    const server = await listen({ billing, gateway });
+
+    try {
+      const response = await postJson(
+        server,
+        "/enhance/enhance",
+        {
+          raw_prompt: "Write a launch email for teachers.",
+          target_model: "auto",
+        },
+        {
+          "x-session-id": "session-pro",
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(gateway.requests[0]).toMatchObject({
+        cache_scope: "user-pro",
+        provider_credential: {
+          apiKey: "gemini-byo-secret-1234",
+          provider: "gemini",
+        },
+      });
+      await expect(
+        store.countUsageEvents(
+          "user-pro",
+          "prompt_enhancement",
+          new Date("2026-06-01T00:00:00.000Z"),
+          new Date("2026-07-01T00:00:00.000Z"),
+        ),
+      ).resolves.toBe(0);
+    } finally {
+      await close(server);
+    }
+  });
+
   it("validates canonical enhancement output server-side", () => {
     expect(validateEnhancementOutput(createValidOutput("enhance"))).toMatchObject({
       valid: true,
@@ -564,10 +770,12 @@ class FakeHistory implements HistoryUsagePort {
 }
 
 async function listen(input: {
+  billing?: SettingsBillingPort;
   context?: EnhancementContextPort;
   env?: PromptGenEnv;
   gateway: EnhancementGateway;
   history?: HistoryUsagePort;
+  rateLimiter?: RateLimiter;
 }): Promise<Server> {
   const logger = {
     info() {
@@ -583,9 +791,11 @@ async function listen(input: {
   const server = createServer(
     createApiRequestHandler({
       ...(input.context ? { context: input.context } : {}),
+      ...(input.billing ? { billing: input.billing } : {}),
       env: input.env ?? testEnv,
       gateway: input.gateway,
       logger,
+      ...(input.rateLimiter ? { rateLimiter: input.rateLimiter } : {}),
       ...(input.history ? { history: input.history } : {}),
     }),
   );
@@ -601,6 +811,7 @@ async function postJson(
   server: Server,
   path: string,
   body: unknown,
+  headers: Record<string, string> = {},
 ): Promise<{ status: number; body: TestEnhancementResponseBody }> {
   const address = server.address();
 
@@ -612,6 +823,7 @@ async function postJson(
     method: "POST",
     headers: {
       "content-type": "application/json",
+      ...headers,
     },
     body: JSON.stringify(body),
   });

@@ -4,6 +4,7 @@ export interface PromptGenEnv {
   apiPort: number;
   appUrl: string;
   authSessionTtlSeconds: number;
+  byoKeyEncryptionSecret?: string;
   databaseUrl?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
@@ -32,6 +33,7 @@ export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv 
     source.AUTH_SESSION_TTL_SECONDS ?? String(defaultEnv.authSessionTtlSeconds),
     "AUTH_SESSION_TTL_SECONDS",
   );
+  const byoKeyEncryptionSecret = parseOptionalSecret(source.BYO_KEY_ENCRYPTION_SECRET);
   const databaseUrl = parseOptional(source.DATABASE_URL);
   const googleOAuthClientId = parseOptional(source.GOOGLE_OAUTH_CLIENT_ID);
   const googleOAuthClientSecret = parseOptionalSecret(source.GOOGLE_OAUTH_CLIENT_SECRET);
@@ -47,6 +49,7 @@ export function loadPromptGenEnv(source: EnvSource = process.env): PromptGenEnv 
     apiPort,
     appUrl,
     authSessionTtlSeconds,
+    ...(byoKeyEncryptionSecret ? { byoKeyEncryptionSecret } : {}),
     ...(databaseUrl ? { databaseUrl } : {}),
     ...(googleOAuthClientId ? { googleOAuthClientId } : {}),
     ...(googleOAuthClientSecret ? { googleOAuthClientSecret } : {}),

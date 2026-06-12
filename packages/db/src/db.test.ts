@@ -27,7 +27,7 @@ describeWithDatabase("db migrations and full-text search", () => {
         ORDER BY table_name
       `;
 
-      expect(applied).toEqual(["0000_phase_1_data_layer.sql"]);
+      expect(applied).toEqual(["0000_phase_1_data_layer.sql", "0001_phase_6_billing_privacy.sql"]);
       expect(tables.map((table) => table.table_name)).toEqual(
         expect.arrayContaining([
           "context_snippets",
@@ -39,6 +39,7 @@ describeWithDatabase("db migrations and full-text search", () => {
           "sessions",
           "tags",
           "templates",
+          "user_billing_settings",
           "usage_events",
           "users",
         ]),
