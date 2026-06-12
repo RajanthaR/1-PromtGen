@@ -43,8 +43,8 @@ export class PostgresAuthBillingStore implements AuthBillingStore {
     since: Date,
     until: Date,
   ): Promise<number> {
-    const rows = await this.db
-      .select({ quantity: usageEvents.quantity })
+    const [row] = await this.db
+      .select({ total: sql<number>`coalesce(sum(${usageEvents.quantity}), 0)` })
       .from(usageEvents)
       .where(
         and(
@@ -55,7 +55,7 @@ export class PostgresAuthBillingStore implements AuthBillingStore {
         ),
       );
 
-    return rows.reduce((total, row) => total + row.quantity, 0);
+    return Number(row?.total ?? 0);
   }
 
   async clearByoApiKey(userId: string, updatedAt: Date): Promise<BillingSettingsRecord> {
@@ -352,6 +352,7 @@ export class PostgresAuthBillingStore implements AuthBillingStore {
 
       if (expiredPromptIds.length > 0) {
         await tx.delete(promptTags).where(inArray(promptTags.promptId, expiredPromptIds));
+        await tx.delete(promptVersions).where(inArray(promptVersions.promptId, expiredPromptIds));
         await tx.delete(prompts).where(inArray(prompts.id, expiredPromptIds));
       }
 
@@ -569,6 +570,7 @@ async function deleteUserScopedRows(
 
   if (promptIds.length > 0) {
     await db.delete(promptTags).where(inArray(promptTags.promptId, promptIds));
+    await db.delete(promptVersions).where(inArray(promptVersions.promptId, promptIds));
     await db.delete(prompts).where(inArray(prompts.id, promptIds));
   }
 

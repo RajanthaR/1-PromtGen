@@ -477,7 +477,9 @@ function downloadJson(filename: string, payload: unknown): void {
 
   link.href = url;
   link.download = filename;
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
 

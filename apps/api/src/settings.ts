@@ -170,16 +170,20 @@ export async function handleSettingsRequest(
       return true;
     }
 
-    const deletion = await dependencies.billing.requestAccountDeletion(sessionId);
+    if (route.action === "deleteAccount") {
+      const deletion = await dependencies.billing.requestAccountDeletion(sessionId);
 
-    writeJson(response, 200, {
-      deletion,
-    });
-    dependencies.logger.info("api.settings_request", {
-      action: route.action,
-      statusCode: 200,
-    });
-    return true;
+      writeJson(response, 200, {
+        deletion,
+      });
+      dependencies.logger.info("api.settings_request", {
+        action: route.action,
+        statusCode: 200,
+      });
+      return true;
+    }
+
+    return false;
   } catch (error) {
     const mapped = mapSettingsError(error);
 
