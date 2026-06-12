@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { defaultLlmGatewayRegistry, type LlmGatewayRegistryConfig } from "@promptgen/config/llm";
 
+import {
+  createInMemoryLlmResultCache,
+  type CachedPromptEnhancementOutput,
+  type LlmResultCache,
+} from "./cache";
 import { LlmProviderError } from "./errors";
 import { buildGeminiRequestBody, createGeminiAdapter } from "./gemini-adapter";
 import { buildOpenAIResponsesRequestBody, createOpenAIAdapter } from "./openai-adapter";
@@ -142,6 +147,132 @@ describe("llm gateway", () => {
     expect(adapter.calls[0]?.variablePart).toContain('selected_context: ["Audience: trial users"]');
     expect(adapter.calls[0]?.variablePart.endsWith("</user_input>")).toBe(true);
     expect(adapter.calls[0]?.variablePart).toContain("Write a launch email for my SaaS.");
+  });
+
+  it("marks provider prompt cache hits when the provider reports cached prefix tokens", async () => {
+    const adapter = new ScriptedGeminiAdapter([
+      () =>
+        providerOutput(validResult(), {
+          cachedInputTokens: 70,
+          inputTokens: 100,
+          outputTokens: 20,
+          totalTokens: 120,
+        }),
+    ]);
+    const traces: LlmTraceEvent[] = [];
+    const gateway = createGateway(adapter, traces);
+
+    const output = await gateway.enhance(baseInput());
+
+    expect(output.meta.cache).toEqual({
+      cached_input_tokens: 70,
+      input_tokens: 100,
+      input_tokens_saved: 70,
+      provider_cache_hit: true,
+      result_cache_hit: false,
+    });
+    expect(traces[0]?.cache).toEqual(output.meta.cache);
+    expect(traces[0]?.cost_usd).toBeLessThan(0.00033);
+  });
+
+  it("uses the brief result cache for identical enhancement input and reports zero repeat tokens", async () => {
+    const adapter = new ScriptedGeminiAdapter([
+      () =>
+        providerOutput(validResult({ title: "Cached result" }), {
+          cachedInputTokens: 0,
+          inputTokens: 80,
+          outputTokens: 20,
+          totalTokens: 100,
+        }),
+    ]);
+    const traces: LlmTraceEvent[] = [];
+    const gateway = createGateway(adapter, traces, {
+      resultCache: createInMemoryLlmResultCache(),
+    });
+
+    const first = await gateway.enhance(baseInput());
+    const second = await gateway.enhance(baseInput());
+
+    expect(first.result.title).toBe("Cached result");
+    expect(second.result.title).toBe("Cached result");
+    expect(adapter.calls).toHaveLength(1);
+    expect(second.meta).toMatchObject({
+      latency_ms: 0,
+      model: "gemini-3.5-flash",
+      provider: "gemini",
+      tokens: 0,
+      cache: {
+        cached_input_tokens: 0,
+        input_tokens: 0,
+        input_tokens_saved: 80,
+        provider_cache_hit: false,
+        result_cache_hit: true,
+      },
+    });
+    expect(traces.at(-1)).toMatchObject({
+      attempt: 0,
+      cost_usd: 0,
+      success: true,
+      tokens: {
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+      },
+      cache: {
+        result_cache_hit: true,
+      },
+    });
+  });
+
+  it("uses BYO provider credentials for generation requests", async () => {
+    const adapter = new ScriptedGeminiAdapter([() => providerOutput(validResult())]);
+    const gateway = createGateway(adapter);
+
+    await gateway.enhance(
+      baseInput({
+        provider_credential: {
+          apiKey: "gemini-byo-secret-1234",
+          provider: "gemini",
+        },
+      }),
+    );
+
+    expect(adapter.calls[0]?.apiKey).toBe("gemini-byo-secret-1234");
+  });
+
+  it("scopes result cache entries without including BYO secrets", async () => {
+    const adapter = new ScriptedGeminiAdapter([
+      () => providerOutput(validResult({ title: "User A result" })),
+      () => providerOutput(validResult({ title: "User B result" })),
+    ]);
+    const cacheKeys: string[] = [];
+    const cache = createRecordingCache(cacheKeys);
+    const gateway = createGateway(adapter, [], { resultCache: cache });
+
+    await gateway.enhance(
+      baseInput({
+        cache_scope: "user-a",
+        provider_credential: {
+          apiKey: "gemini-user-a-secret",
+          provider: "gemini",
+        },
+      }),
+    );
+    await gateway.enhance(
+      baseInput({
+        cache_scope: "user-b",
+        provider_credential: {
+          apiKey: "gemini-user-b-secret",
+          provider: "gemini",
+        },
+      }),
+    );
+
+    expect(adapter.calls).toHaveLength(2);
+    expect(cacheKeys).toHaveLength(4);
+    expect(new Set(cacheKeys).size).toBe(2);
+    expect(cacheKeys.join("\n")).not.toContain("gemini-user-a-secret");
+    expect(cacheKeys.join("\n")).not.toContain("gemini-user-b-secret");
   });
 
   it("builds Gemini native structured-output request configuration", () => {
@@ -502,9 +633,11 @@ function createGateway(
   options: {
     config?: LlmGatewayRegistryConfig;
     openaiAdapter?: LlmProviderAdapter;
+    resultCache?: LlmResultCache;
+    resultCacheTtlSeconds?: number;
   } = {},
 ) {
-  return createLlmGateway({
+  const gatewayOptions = {
     apiKey: "test-gemini-key",
     judgeApiKey: "test-openai-key",
     registry: createLlmAdapterRegistry({
@@ -515,11 +648,17 @@ function createGateway(
       config: options.config ?? defaultLlmGatewayRegistry,
     }),
     reporter: {
-      recordLlmCall(event) {
+      recordLlmCall(event: LlmTraceEvent) {
         traces.push(event);
       },
     },
-  });
+    ...(options.resultCache ? { resultCache: options.resultCache } : {}),
+    ...(options.resultCacheTtlSeconds !== undefined
+      ? { resultCacheTtlSeconds: options.resultCacheTtlSeconds }
+      : {}),
+  };
+
+  return createLlmGateway(gatewayOptions);
 }
 
 function baseInput(overrides: Partial<PromptEnhancementInput> = {}): PromptEnhancementInput {
@@ -532,15 +671,33 @@ function baseInput(overrides: Partial<PromptEnhancementInput> = {}): PromptEnhan
   };
 }
 
-function providerOutput(result: unknown): ProviderGenerateOutput {
+function providerOutput(
+  result: unknown,
+  usage = {
+    cachedInputTokens: 10,
+    inputTokens: 50,
+    outputTokens: 15,
+    totalTokens: 65,
+  },
+): ProviderGenerateOutput {
   return {
     result,
     text: JSON.stringify(result),
-    usage: {
-      cachedInputTokens: 10,
-      inputTokens: 50,
-      outputTokens: 15,
-      totalTokens: 65,
+    usage,
+  };
+}
+
+function createRecordingCache(keys: string[]): LlmResultCache {
+  const entries = new Map<string, CachedPromptEnhancementOutput>();
+
+  return {
+    get(key) {
+      keys.push(key);
+      return entries.get(key) ?? null;
+    },
+    set(key, output) {
+      keys.push(key);
+      entries.set(key, output);
     },
   };
 }

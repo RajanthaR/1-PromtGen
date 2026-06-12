@@ -225,7 +225,7 @@ export function LibraryPage() {
                   key={prompt.id}
                   style={{
                     ...listItemStyle,
-                    borderColor: isSelected ? "#173f35" : "#e5e7eb",
+                    border: isSelected ? "2px solid #173f35" : listItemStyle.border,
                   }}
                 >
                   <div style={rowBetweenStyle}>
@@ -239,6 +239,7 @@ export function LibraryPage() {
                         {formatDateTime(prompt.updatedAt)}
                       </p>
                     </div>
+                    {isSelected ? <span style={selectedBadgeStyle}>Selected</span> : null}
                     {prompt.deletedAt ? <span style={deletedBadgeStyle}>Deleted</span> : null}
                   </div>
                   <div aria-label={`${prompt.title} tags`} style={tagRowStyle}>
@@ -453,6 +454,15 @@ const sectionTitleStyle = {
   fontSize: "1.125rem",
   lineHeight: 1.3,
   margin: 0,
+} satisfies CSSProperties;
+
+const selectedBadgeStyle = {
+  border: "1px solid #173f35",
+  borderRadius: "999px",
+  color: "#173f35",
+  fontSize: "0.75rem",
+  fontWeight: 800,
+  padding: "0.2rem 0.5rem",
 } satisfies CSSProperties;
 
 const tagRowStyle = {

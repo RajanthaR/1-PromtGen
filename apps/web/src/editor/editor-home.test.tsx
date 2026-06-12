@@ -35,4 +35,11 @@ describe("EditorHome", () => {
   it("exposes the canonical loading text for the live state", () => {
     expect(editorHomeTestIds.loadingText).toBe("Structuring your prompt…");
   });
+
+  it("keeps live-region semantics available for editor state changes", () => {
+    const markup = renderToStaticMarkup(createElement(EditorHome));
+
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain('role="status"');
+  });
 });

@@ -19,7 +19,12 @@ export interface PromptEnhancementInput {
   mode: PromptEnhancementMode;
   target_model: string;
   prompt_type: "text";
+  cache_scope?: string;
   options?: PromptEnhancementOptions;
+  provider_credential?: {
+    apiKey: string;
+    provider: LlmProviderId;
+  };
 }
 
 export interface PromptEnhancementResult {
@@ -73,6 +78,15 @@ export interface LlmGatewayMeta {
   tokens: number;
   latency_ms: number;
   fellback: boolean;
+  cache?: LlmGatewayCacheMeta;
+}
+
+export interface LlmGatewayCacheMeta {
+  result_cache_hit: boolean;
+  provider_cache_hit: boolean;
+  input_tokens: number;
+  cached_input_tokens: number;
+  input_tokens_saved: number;
 }
 
 export interface PromptEnhancementOutput {
@@ -124,6 +138,7 @@ export interface LlmTraceEvent {
   success: boolean;
   fellback: boolean;
   attempt: number;
+  cache?: LlmGatewayCacheMeta;
   error_code?: string;
 }
 

@@ -2,10 +2,19 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { HistoryUsagePort, RecordPromptOperationInput } from "@promptgen/history-usage";
 
+import {
+  AuthBillingError,
+  type AuthBillingErrorCode,
+  type EnhancementBillingAuthorization,
+  type ReadBillingSettingsResult,
+} from "./auth-billing";
 import { LlmGatewayError } from "./llm-gateway";
 import type { JsonLogger } from "./logger";
+import type { LlmObservabilityStore } from "./observability";
 import type { PromptStructureChecklist } from "./quality-checklist";
 import { evaluatePromptStructure } from "./quality-checklist";
+import type { RateLimiter } from "./redis";
+import { resolveSessionId } from "./request-auth";
 
 export const enhancementModes = ["improve", "enhance", "refine", "shorten"] as const;
 
@@ -39,7 +48,12 @@ export interface EnhancementGatewayRequest {
   mode: EnhancementMode;
   target_model: string;
   prompt_type: "text";
+  cache_scope?: string;
   options: Record<string, unknown>;
+  provider_credential?: {
+    apiKey: string;
+    provider: "gemini" | "openai";
+  };
 }
 
 export interface EnhancementSelectedContextSnippet {
@@ -63,6 +77,13 @@ export interface EnhancementGatewayResult {
     tokens: number;
     latency_ms: number;
     fellback: boolean;
+    cache?: {
+      result_cache_hit: boolean;
+      provider_cache_hit: boolean;
+      input_tokens: number;
+      cached_input_tokens: number;
+      input_tokens_saved: number;
+    };
   };
 }
 
@@ -100,12 +121,23 @@ export interface EnhancementGateway {
   judge?(request: EnhancementJudgeGatewayRequest): Promise<EnhancementJudgeGatewayResult>;
 }
 
+export interface EnhancementBillingPort {
+  authorizeEnhancement(
+    sessionId: string,
+    input?: { preferByoKey?: boolean },
+  ): Promise<EnhancementBillingAuthorization>;
+  readBillingSettings(sessionId: string): Promise<ReadBillingSettingsResult>;
+}
+
 export interface EnhancementHandlerDependencies {
+  billing?: EnhancementBillingPort;
   context?: EnhancementContextPort;
   gateway: EnhancementGateway;
   history?: HistoryUsagePort;
   llmJudgeEnabled?: boolean;
   logger: JsonLogger;
+  observability?: Pick<LlmObservabilityStore, "recordLlmQuality">;
+  rateLimiter?: RateLimiter;
 }
 
 interface EnhancementHttpRequest {
@@ -234,7 +266,57 @@ export async function handleEnhancementRequest(
     return;
   }
 
-  const userId = resolveUserId(request, parsedRequest);
+  const identity = await resolveEnhancementIdentity({
+    dependencies,
+    input: parsedRequest,
+    mode,
+    request,
+  });
+
+  if (!identity.ok) {
+    writeJson(response, identity.statusCode, identity.body);
+    dependencies.logger.warn("api.enhancement_request", {
+      mode,
+      statusCode: identity.statusCode,
+      error: identity.body.error,
+    });
+    return;
+  }
+
+  const userId = identity.userId;
+  const rateLimit = await enforceEnhancementRateLimit({
+    dependencies,
+    input: parsedRequest,
+    mode,
+    userId,
+  });
+
+  if (!rateLimit.allowed) {
+    writeJson(response, rateLimit.statusCode, rateLimit.body, rateLimit.headers);
+    dependencies.logger.warn("api.enhancement_rate_limit", {
+      mode,
+      statusCode: rateLimit.statusCode,
+      error: rateLimit.body.error,
+    });
+    return;
+  }
+
+  const billingAuthorization = await authorizeEnhancementBilling({
+    dependencies,
+    identity,
+    input: parsedRequest,
+  });
+
+  if (!billingAuthorization.ok) {
+    writeJson(response, billingAuthorization.statusCode, billingAuthorization.body);
+    dependencies.logger.warn("api.enhancement_request", {
+      mode,
+      statusCode: billingAuthorization.statusCode,
+      error: billingAuthorization.body.error,
+    });
+    return;
+  }
+
   const clarification = analyzeClarificationNeed(parsedRequest.raw_prompt);
   const clarificationSkipped = isClarificationSkipped(parsedRequest.options);
 
@@ -295,6 +377,7 @@ export async function handleEnhancementRequest(
       mode,
       target_model: parsedRequest.target_model,
       prompt_type: parsedRequest.prompt_type,
+      ...(userId ? { cache_scope: userId } : {}),
       options: buildGatewayOptions({
         options: parsedRequest.options,
         selectedContextSnippets: selectedContext.snippets,
@@ -306,6 +389,14 @@ export async function handleEnhancementRequest(
               }
             : {},
       }),
+      ...(billingAuthorization.authorization?.credential.source === "byo_key"
+        ? {
+            provider_credential: {
+              apiKey: billingAuthorization.authorization.credential.apiKey,
+              provider: billingAuthorization.authorization.credential.provider,
+            },
+          }
+        : {}),
     });
     const validation = validateEnhancementOutput(gatewayResult.result);
 
@@ -349,6 +440,17 @@ export async function handleEnhancementRequest(
       input: parsedRequest,
     });
 
+    await dependencies.observability?.recordLlmQuality({
+      judge_status: qualityJudge.status,
+      mode,
+      model: gatewayResult.meta.model,
+      prompt_type: parsedRequest.prompt_type,
+      provider: gatewayResult.meta.provider,
+      structure_score_after: qualityChecklist.after.structure_score,
+      structure_score_before: qualityChecklist.before.structure_score,
+      target_model: parsedRequest.target_model,
+    });
+
     writeJson(response, 200, {
       result,
       quality_checklist: qualityChecklist,
@@ -365,6 +467,8 @@ export async function handleEnhancementRequest(
       tokens: gatewayResult.meta.tokens,
       latencyMs: gatewayResult.meta.latency_ms,
       fellback: gatewayResult.meta.fellback,
+      providerCacheHit: gatewayResult.meta.cache?.provider_cache_hit ?? false,
+      resultCacheHit: gatewayResult.meta.cache?.result_cache_hit ?? false,
       qualityJudgeStatus: qualityJudge.status,
     });
   } catch (error) {
@@ -378,6 +482,239 @@ export async function handleEnhancementRequest(
       statusCode: 502,
       error: "gateway_error",
     });
+  }
+}
+
+type EnhancementIdentityResult =
+  | {
+      ok: true;
+      sessionId: string | null;
+      userId: string | null;
+    }
+  | {
+      ok: false;
+      body: {
+        error: string;
+        message: string;
+        raw_prompt: string;
+      };
+      statusCode: number;
+    };
+
+type EnhancementBillingResult =
+  | {
+      ok: true;
+      authorization: EnhancementBillingAuthorization | null;
+    }
+  | {
+      ok: false;
+      body: {
+        error: string;
+        message: string;
+        raw_prompt: string;
+      };
+      statusCode: number;
+    };
+
+async function resolveEnhancementIdentity(input: {
+  dependencies: EnhancementHandlerDependencies;
+  input: EnhancementHttpRequest;
+  mode: EnhancementMode;
+  request: IncomingMessage;
+}): Promise<EnhancementIdentityResult> {
+  const sessionId = resolveSessionId(input.request);
+
+  if (!input.dependencies.billing) {
+    const userId = resolveUserId(input.request, input.input);
+
+    if (userId && !sessionId) {
+      input.dependencies.logger.warn("api.enhancement_legacy_user_id_shim", {
+        mode: input.mode,
+        scope: "temporary_local_api_compatibility",
+      });
+    }
+
+    return {
+      ok: true,
+      sessionId: null,
+      userId,
+    };
+  }
+
+  if (!sessionId) {
+    return {
+      ok: false,
+      body: {
+        error: "session_required",
+        message: "x-session-id header or Bearer token is required for billed enhancement.",
+        raw_prompt: input.input.raw_prompt,
+      },
+      statusCode: 401,
+    };
+  }
+
+  try {
+    const settings = await input.dependencies.billing.readBillingSettings(sessionId);
+
+    if (settings.planPolicy.emailVerificationRequired && !settings.emailVerified) {
+      return {
+        ok: false,
+        body: {
+          error: "email_verification_required",
+          message: "Free-tier usage requires a verified email address.",
+          raw_prompt: input.input.raw_prompt,
+        },
+        statusCode: 403,
+      };
+    }
+
+    return {
+      ok: true,
+      sessionId,
+      userId: settings.userId,
+    };
+  } catch (error) {
+    return mapEnhancementBillingError(error, input.input.raw_prompt);
+  }
+}
+
+async function authorizeEnhancementBilling(input: {
+  dependencies: EnhancementHandlerDependencies;
+  identity: Extract<EnhancementIdentityResult, { ok: true }>;
+  input: EnhancementHttpRequest;
+}): Promise<EnhancementBillingResult> {
+  if (!input.dependencies.billing || !input.identity.sessionId) {
+    return {
+      ok: true,
+      authorization: null,
+    };
+  }
+
+  try {
+    return {
+      ok: true,
+      authorization: await input.dependencies.billing.authorizeEnhancement(input.identity.sessionId, {
+        preferByoKey: input.input.options.use_byo_key !== false,
+      }),
+    };
+  } catch (error) {
+    return mapEnhancementBillingError(error, input.input.raw_prompt);
+  }
+}
+
+function mapEnhancementBillingError(
+  error: unknown,
+  rawPrompt: string,
+): Extract<EnhancementBillingResult, { ok: false }> {
+  if (error instanceof AuthBillingError) {
+    const statusCodeByError: Record<AuthBillingErrorCode, number> = {
+      byo_key_not_allowed: 403,
+      configuration_error: 503,
+      email_verification_required: 403,
+      invalid_input: 400,
+      not_found: 404,
+      quota_exceeded: 402,
+      unauthenticated: 401,
+    };
+
+    return {
+      ok: false,
+      body: {
+        error: error.code,
+        message: error.message,
+        raw_prompt: rawPrompt,
+      },
+      statusCode: statusCodeByError[error.code],
+    };
+  }
+
+  return {
+    ok: false,
+    body: {
+      error: "billing_error",
+      message: "Enhancement billing authorization failed.",
+      raw_prompt: rawPrompt,
+    },
+    statusCode: 500,
+  };
+}
+
+type EnhancementRateLimitResult =
+  | { allowed: true }
+  | {
+      allowed: false;
+      body: {
+        error: "rate_limit_exceeded" | "rate_limit_unavailable";
+        message: string;
+        raw_prompt: string;
+        limit?: number;
+        remaining?: number;
+        reset_at?: string;
+        retry_after_seconds?: number;
+      };
+      headers: Record<string, string>;
+      statusCode: 429 | 503;
+    };
+
+async function enforceEnhancementRateLimit(input: {
+  dependencies: EnhancementHandlerDependencies;
+  input: EnhancementHttpRequest;
+  mode: EnhancementMode;
+  userId: string | null;
+}): Promise<EnhancementRateLimitResult> {
+  if (!input.dependencies.rateLimiter) {
+    return { allowed: true };
+  }
+
+  if (!input.userId) {
+    input.dependencies.logger.warn("api.enhancement_rate_limit", {
+      mode: input.mode,
+      statusCode: 200,
+      skipped: "missing_user_id",
+    });
+    return { allowed: true };
+  }
+
+  try {
+    const result = await input.dependencies.rateLimiter.check({
+      action: "prompt-enhancement",
+      userId: input.userId,
+    });
+
+    if (result.allowed) {
+      return { allowed: true };
+    }
+
+    return {
+      allowed: false,
+      body: {
+        error: "rate_limit_exceeded",
+        limit: result.limit,
+        message: "Rate limit exceeded. Try again after the reset window.",
+        raw_prompt: input.input.raw_prompt,
+        remaining: result.remaining,
+        reset_at: result.reset_at,
+        retry_after_seconds: result.retry_after_seconds,
+      },
+      headers: {
+        "retry-after": String(result.retry_after_seconds),
+        "x-ratelimit-limit": String(result.limit),
+        "x-ratelimit-remaining": String(result.remaining),
+        "x-ratelimit-reset": result.reset_at,
+      },
+      statusCode: 429,
+    };
+  } catch {
+    return {
+      allowed: false,
+      body: {
+        error: "rate_limit_unavailable",
+        message: "Rate limit enforcement is temporarily unavailable.",
+        raw_prompt: input.input.raw_prompt,
+      },
+      headers: {},
+      statusCode: 503,
+    };
   }
 }
 
@@ -910,7 +1247,12 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
-function writeJson(response: ServerResponse, statusCode: number, payload: unknown): void {
-  response.writeHead(statusCode, { "content-type": "application/json" });
+function writeJson(
+  response: ServerResponse,
+  statusCode: number,
+  payload: unknown,
+  headers: Record<string, string> = {},
+): void {
+  response.writeHead(statusCode, { "content-type": "application/json", ...headers });
   response.end(JSON.stringify(payload));
 }

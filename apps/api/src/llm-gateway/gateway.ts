@@ -2,6 +2,11 @@ import { loadPromptGenEnv, type PromptGenEnv } from "@promptgen/config/env";
 import { defaultLlmGatewayRegistry, type LlmModelConfig } from "@promptgen/config/llm";
 import { buildPromptQualityJudgePrompt } from "@promptgen/prompt-engine";
 
+import {
+  createLlmResultCacheKey,
+  defaultLlmResultCacheTtlSeconds,
+  type LlmResultCache,
+} from "./cache";
 import { LlmGatewayError, toSafeErrorCode } from "./errors";
 import { createGeminiAdapter } from "./gemini-adapter";
 import { createOpenAIAdapter } from "./openai-adapter";
@@ -16,6 +21,8 @@ import { detectSecrets } from "./secrets";
 import { screenPromptEnhancementOutput } from "./output-screening";
 import type {
   LlmProviderAdapter,
+  LlmGatewayCacheMeta,
+  LlmGatewayMeta,
   LlmTraceReporter,
   PromptEnhancementInput,
   PromptEnhancementOutput,
@@ -36,6 +43,8 @@ export interface CreateLlmGatewayOptions {
   judgeApiKey?: string;
   registry: LlmAdapterRegistry;
   reporter?: LlmTraceReporter;
+  resultCache?: LlmResultCache;
+  resultCacheTtlSeconds?: number;
 }
 
 const emptyUsage: ProviderTokenUsage = {
@@ -48,6 +57,8 @@ const emptyUsage: ProviderTokenUsage = {
 export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
   const clock = options.clock ?? Date.now;
   const reporter = options.reporter;
+  const resultCache = options.resultCache;
+  const resultCacheTtlSeconds = options.resultCacheTtlSeconds ?? defaultLlmResultCacheTtlSeconds;
 
   return {
     async enhance(input): Promise<PromptEnhancementOutput> {
@@ -61,13 +72,39 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
         );
       }
 
-      const apiKey = options.apiKey?.trim();
-      if (!apiKey) {
-        throw new LlmGatewayError("configuration_error", "LLM provider API key is not configured.");
+      const primaryModel = options.registry.resolveGenerationModel(normalizedInput.target_model);
+      const apiKey = resolveEnhancementApiKey(normalizedInput, primaryModel, options.apiKey);
+      const fallbackModel = options.registry.resolveFallbackModel(primaryModel);
+      const resultCacheKey = resultCache
+        ? createLlmResultCacheKey({ input: normalizedInput, modelId: primaryModel.id })
+        : null;
+      const cachedOutput =
+        resultCache && resultCacheKey ? await resultCache.get(resultCacheKey) : null;
+
+      if (cachedOutput) {
+        const meta = createResultCacheHitMeta(cachedOutput.meta);
+
+        await reporter?.recordLlmCall({
+          attempt: 0,
+          cache: meta.cache,
+          cost_usd: 0,
+          fellback: meta.fellback,
+          latency_ms: 0,
+          mode: normalizedInput.mode,
+          model: meta.model,
+          prompt_type: normalizedInput.prompt_type,
+          provider: meta.provider,
+          success: true,
+          target_model: normalizedInput.target_model,
+          tokens: emptyUsage,
+        });
+
+        return {
+          result: cachedOutput.result,
+          meta,
+        };
       }
 
-      const primaryModel = options.registry.resolveGenerationModel(normalizedInput.target_model);
-      const fallbackModel = options.registry.resolveFallbackModel(primaryModel);
       const attempts = [
         { attempt: 1, fellback: false, model: primaryModel },
         { attempt: 2, fellback: false, model: primaryModel },
@@ -89,9 +126,19 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
           const result = validatePromptEnhancementResult(providerOutput.result);
           screenPromptEnhancementOutput(result);
           const latencyMs = Math.max(0, Math.round(clock() - startedAt));
+          const cache = createProviderCacheMeta(providerOutput.usage);
+          const meta: LlmGatewayMeta & { cache: LlmGatewayCacheMeta } = {
+            cache,
+            fellback: attempt.fellback,
+            latency_ms: latencyMs,
+            model: attempt.model.id,
+            provider: attempt.model.provider,
+            tokens: providerOutput.usage.totalTokens,
+          };
 
           await reporter?.recordLlmCall({
             attempt: attempt.attempt,
+            cache,
             cost_usd: estimateCost(attempt.model, providerOutput.usage),
             fellback: attempt.fellback,
             latency_ms: latencyMs,
@@ -104,15 +151,18 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
             tokens: providerOutput.usage,
           });
 
+          if (resultCacheKey) {
+            await writeResultCache(
+              resultCache,
+              resultCacheKey,
+              { result, meta },
+              resultCacheTtlSeconds,
+            );
+          }
+
           return {
             result,
-            meta: {
-              fellback: attempt.fellback,
-              latency_ms: latencyMs,
-              model: attempt.model.id,
-              provider: attempt.model.provider,
-              tokens: providerOutput.usage.totalTokens,
-            },
+            meta,
           };
         } catch (error) {
           lastError = error;
@@ -186,9 +236,19 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
         });
         const result = validatePromptQualityJudgeResult(providerOutput.result);
         const latencyMs = Math.max(0, Math.round(clock() - startedAt));
+        const cache = createProviderCacheMeta(providerOutput.usage);
+        const meta: LlmGatewayMeta & { cache: LlmGatewayCacheMeta } = {
+          cache,
+          fellback: false,
+          latency_ms: latencyMs,
+          model: judgeModel.id,
+          provider: judgeModel.provider,
+          tokens: providerOutput.usage.totalTokens,
+        };
 
         await reporter?.recordLlmCall({
           attempt: 1,
+          cache,
           cost_usd: estimateCost(judgeModel, providerOutput.usage),
           fellback: false,
           latency_ms: latencyMs,
@@ -203,13 +263,7 @@ export function createLlmGateway(options: CreateLlmGatewayOptions): LlmGateway {
 
         return {
           result,
-          meta: {
-            fellback: false,
-            latency_ms: latencyMs,
-            model: judgeModel.id,
-            provider: judgeModel.provider,
-            tokens: providerOutput.usage.totalTokens,
-          },
+          meta,
         };
       } catch (error) {
         const latencyMs = Math.max(0, Math.round(clock() - startedAt));
@@ -246,6 +300,8 @@ export function createDefaultLlmGateway(
   options: {
     env?: PromptGenEnv;
     reporter?: LlmTraceReporter;
+    resultCache?: LlmResultCache;
+    resultCacheTtlSeconds?: number;
     adapters?: Partial<Record<"gemini" | "openai", LlmProviderAdapter>>;
   } = {},
 ): LlmGateway {
@@ -271,6 +327,14 @@ export function createDefaultLlmGateway(
 
   if (options.reporter) {
     gatewayOptions.reporter = options.reporter;
+  }
+
+  if (options.resultCache) {
+    gatewayOptions.resultCache = options.resultCache;
+  }
+
+  if (options.resultCacheTtlSeconds !== undefined) {
+    gatewayOptions.resultCacheTtlSeconds = options.resultCacheTtlSeconds;
   }
 
   return createLlmGateway(gatewayOptions);
@@ -304,6 +368,37 @@ function normalizeEnhancementInput(input: PromptEnhancementInput): PromptEnhance
     raw_prompt: rawPrompt,
     target_model: input.target_model.trim() || "auto",
   };
+}
+
+function resolveEnhancementApiKey(
+  input: PromptEnhancementInput,
+  primaryModel: LlmModelConfig,
+  platformApiKey: string | undefined,
+): string {
+  if (input.provider_credential) {
+    if (input.provider_credential.provider !== primaryModel.provider) {
+      throw new LlmGatewayError(
+        "configuration_error",
+        "BYO provider key does not match the selected model provider.",
+      );
+    }
+
+    const apiKey = input.provider_credential.apiKey.trim();
+
+    if (!apiKey) {
+      throw new LlmGatewayError("configuration_error", "BYO provider API key is empty.");
+    }
+
+    return apiKey;
+  }
+
+  const apiKey = platformApiKey?.trim();
+
+  if (!apiKey) {
+    throw new LlmGatewayError("configuration_error", "LLM provider API key is not configured.");
+  }
+
+  return apiKey;
 }
 
 function normalizeJudgeInput(input: PromptQualityJudgeInput): PromptQualityJudgeInput {
@@ -342,4 +437,49 @@ function estimateCost(model: LlmModelConfig, usage: ProviderTokenUsage): number 
       usage.outputTokens * model.pricing.outputPerMillionUsd) /
     1_000_000
   );
+}
+
+function createProviderCacheMeta(usage: ProviderTokenUsage): LlmGatewayCacheMeta {
+  const cachedInputTokens = Math.max(0, usage.cachedInputTokens);
+
+  return {
+    cached_input_tokens: cachedInputTokens,
+    input_tokens: usage.inputTokens,
+    input_tokens_saved: cachedInputTokens,
+    provider_cache_hit: cachedInputTokens > 0,
+    result_cache_hit: false,
+  };
+}
+
+function createResultCacheHitMeta(meta: LlmGatewayMeta): LlmGatewayMeta & {
+  cache: LlmGatewayCacheMeta;
+} {
+  const originalCacheMeta = meta.cache;
+  const inputTokensSaved = originalCacheMeta?.input_tokens ?? meta.tokens;
+
+  return {
+    ...meta,
+    cache: {
+      cached_input_tokens: 0,
+      input_tokens: 0,
+      input_tokens_saved: inputTokensSaved,
+      provider_cache_hit: originalCacheMeta?.provider_cache_hit ?? false,
+      result_cache_hit: true,
+    },
+    latency_ms: 0,
+    tokens: 0,
+  };
+}
+
+async function writeResultCache(
+  resultCache: LlmResultCache | undefined,
+  key: string,
+  output: PromptEnhancementOutput,
+  ttlSeconds: number,
+): Promise<void> {
+  try {
+    await resultCache?.set(key, output, ttlSeconds);
+  } catch {
+    return undefined;
+  }
 }

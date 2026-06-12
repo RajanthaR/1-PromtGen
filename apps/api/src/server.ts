@@ -13,7 +13,14 @@ import {
 import { handleHistoryRequest } from "./history";
 import type { JsonLogger } from "./logger";
 import { createJsonLogger } from "./logger";
-import { createRedisHealthProbe, type RedisHealthProbe } from "./redis";
+import type { LlmObservabilityStore } from "./observability";
+import {
+  createRedisHealthProbe,
+  createRedisRateLimiter,
+  type RateLimiter,
+  type RedisHealthProbe,
+} from "./redis";
+import { handleSettingsRequest, type SettingsBillingPort } from "./settings";
 
 const defaultEnv = loadPromptGenEnv();
 
@@ -49,19 +56,37 @@ export function createApiRequestHandler(options: {
   context?: EnhancementContextPort;
   env?: PromptGenEnv;
   gateway?: EnhancementGateway;
+  billing?: SettingsBillingPort;
   history?: HistoryUsagePort;
   logger?: JsonLogger;
+  observability?: LlmObservabilityStore;
+  rateLimiter?: RateLimiter;
   redis?: RedisHealthProbe;
 }): (request: IncomingMessage, response: ServerResponse) => void {
   const env = options.env ?? defaultEnv;
   const context = options.context;
   const gateway = options.gateway ?? createUnconfiguredGateway();
+  const billing = options.billing;
   const history = options.history;
   const logger = options.logger ?? createJsonLogger();
+  const observability = options.observability;
+  const rateLimiter = options.rateLimiter ?? createRedisRateLimiter(env);
   const redis = options.redis ?? createRedisHealthProbe(env);
 
   return (request, response) => {
-    void handleApiRequest(request, response, env, logger, redis, gateway, history, context);
+    void handleApiRequest(
+      request,
+      response,
+      env,
+      logger,
+      redis,
+      gateway,
+      billing,
+      history,
+      context,
+      observability,
+      rateLimiter,
+    );
   };
 }
 
@@ -72,8 +97,11 @@ async function handleApiRequest(
   logger: JsonLogger,
   redis?: RedisHealthProbe,
   gateway?: EnhancementGateway,
+  billing?: SettingsBillingPort,
   history?: HistoryUsagePort,
   context?: EnhancementContextPort,
+  observability?: LlmObservabilityStore,
+  rateLimiter?: RateLimiter,
 ): Promise<void> {
   const method = request.method ?? "GET";
   const url = new URL(request.url ?? "/", "http://localhost");
@@ -86,6 +114,37 @@ async function handleApiRequest(
       path: url.pathname,
       statusCode: 200,
     });
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/observability/llm") {
+    if (!observability) {
+      writeJson(response, 503, {
+        error: "observability_not_configured",
+      });
+      logger.warn("api.request", {
+        method,
+        path: url.pathname,
+        statusCode: 503,
+      });
+      return;
+    }
+
+    writeJson(response, 200, observability.getDashboard());
+    logger.info("api.request", {
+      method,
+      path: url.pathname,
+      statusCode: 200,
+    });
+    return;
+  }
+
+  if (
+    await handleSettingsRequest(request, response, url, {
+      logger,
+      ...(billing ? { billing } : {}),
+    })
+  ) {
     return;
   }
 
@@ -103,9 +162,12 @@ async function handleApiRequest(
     if (isEnhancementMode(mode) && gateway) {
       await handleEnhancementRequest(request, response, mode, {
         ...(context ? { context } : {}),
+        ...(billing ? { billing } : {}),
         gateway,
         logger,
         llmJudgeEnabled: env.promptQualityJudgeEnabled,
+        ...(observability ? { observability } : {}),
+        ...(rateLimiter ? { rateLimiter } : {}),
         ...(history ? { history } : {}),
       });
       return;

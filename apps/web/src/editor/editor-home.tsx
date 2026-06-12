@@ -249,6 +249,10 @@ function EditorStatePanel({
 
     return (
       <section style={styles.resultsWrap}>
+        <p aria-live="polite" className="sr-only" role="status">
+          Enhancement finished. Editable result, score comparison, and structure checklist are
+          available.
+        </p>
         {flowState.confirmation ? (
           <div aria-live="polite" role="status" style={styles.notice}>
             {flowState.confirmation.message}

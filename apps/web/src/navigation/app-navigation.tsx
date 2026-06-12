@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 
 const navItems = [
@@ -6,9 +9,12 @@ const navItems = [
   { href: "/history", label: "History" },
   { href: "/context", label: "Context" },
   { href: "/templates", label: "Templates" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export function AppNavigation() {
+  const pathname = usePathname() ?? "/";
+
   return (
     <header style={styles.header}>
       <a className="skip-link" href="#main-content" style={styles.skipLink}>
@@ -19,11 +25,22 @@ export function AppNavigation() {
           PromptForge Studio
         </a>
         <div style={styles.links}>
-          {navItems.map((item) => (
-            <a href={item.href} key={item.href} style={styles.link}>
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            const isCurrent =
+              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+
+            return (
+              <a
+                aria-current={isCurrent ? "page" : undefined}
+                href={item.href}
+                key={item.href}
+                style={isCurrent ? { ...styles.link, ...styles.activeLink } : styles.link}
+              >
+                {item.label}
+                {isCurrent ? <span style={styles.currentText}> current</span> : null}
+              </a>
+            );
+          })}
         </div>
       </nav>
     </header>
@@ -50,6 +67,16 @@ const styles = {
     padding: "0.35rem 0.55rem",
     textDecoration: "none",
   },
+  activeLink: {
+    background: "#e7f0eb",
+    boxShadow: "inset 0 -3px 0 #173f35",
+    color: "#173f35",
+    fontWeight: 800,
+  },
+  currentText: {
+    fontSize: "0.75rem",
+    fontWeight: 800,
+  },
   links: {
     alignItems: "center",
     display: "flex",
@@ -59,6 +86,7 @@ const styles = {
   nav: {
     alignItems: "center",
     display: "flex",
+    flexWrap: "wrap",
     gap: "1rem",
     justifyContent: "space-between",
     margin: "0 auto",
