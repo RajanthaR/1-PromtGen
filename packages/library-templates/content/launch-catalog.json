@@ -1,0 +1,4239 @@
+[
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_blog_outline",
+    "title": "Blog post outline",
+    "difficulty": "beginner",
+    "tags": [
+      "blog",
+      "outline",
+      "longform"
+    ],
+    "description": "Turn a topic into a structured outline with H2s, angle, and proof needs.",
+    "body": "Act as a senior content editor. Create a blog outline for {{topic}} aimed at {{audience}}. Include a working title, a one-sentence thesis, 5–8 H2 sections with 2–3 bullet points each, where to place examples or data, and a closing CTA of type {{cta_type}}. Do not invent statistics; mark missing facts as [NEEDS SOURCE].",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "cta_type",
+        "label": "CTA type",
+        "required": false,
+        "defaultValue": "newsletter signup"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_thought_leadership",
+    "title": "Thought leadership draft",
+    "difficulty": "advanced",
+    "tags": [
+      "thought-leadership",
+      "opinion",
+      "b2b"
+    ],
+    "description": "Draft an opinionated industry piece with clear stance and counterpoints.",
+    "body": "Act as a {{role}} writing thought leadership for {{publication_or_channel}}. Stance: {{stance}}. Audience: {{audience}}. Write a 700–1000 word draft with a sharp opening, 3 supporting arguments, 1 honest counterpoint, and a practical close. Use only the provided facts: {{facts}}. Use [PLACEHOLDER] for unknowns. Avoid buzzword stacking.",
+    "variables": [
+      {
+        "name": "role",
+        "label": "Author role",
+        "required": true,
+        "defaultValue": "product leader"
+      },
+      {
+        "name": "publication_or_channel",
+        "label": "Publication or channel",
+        "required": true
+      },
+      {
+        "name": "stance",
+        "label": "Core stance",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "facts",
+        "label": "Known facts only",
+        "required": true
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_case_study",
+    "title": "Customer case study narrative",
+    "difficulty": "intermediate",
+    "tags": [
+      "case-study",
+      "customer",
+      "narrative"
+    ],
+    "description": "Structure a case study without fabricating metrics.",
+    "body": "Act as a B2B content strategist. Draft a case study about {{customer_type}} using {{product_or_service}}. Problem: {{problem}}. Approach: {{approach}}. Results (use only these): {{results}}. Sections: situation, challenge, solution, implementation, outcomes, lessons. If a metric is missing, write [METRIC NEEDED]. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "customer_type",
+        "label": "Customer type",
+        "required": true
+      },
+      {
+        "name": "product_or_service",
+        "label": "Product or service",
+        "required": true
+      },
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "approach",
+        "label": "Approach",
+        "required": true
+      },
+      {
+        "name": "results",
+        "label": "Verified results",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "credible and concrete"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_newsletter",
+    "title": "Weekly newsletter issue",
+    "difficulty": "beginner",
+    "tags": [
+      "newsletter",
+      "retention"
+    ],
+    "description": "Scannable newsletter with sections and one primary CTA.",
+    "body": "Act as a newsletter editor for {{brand}}. Audience: {{audience}}. Theme: {{theme}}. Notes: {{notes}}. Produce 3 subject lines, preview text, intro (≤80 words), 3 section blurbs with [LINK], and primary CTA: {{cta}}. Voice: {{voice}}.",
+    "variables": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "theme",
+        "label": "Theme",
+        "required": true
+      },
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "cta",
+        "label": "CTA",
+        "required": true
+      },
+      {
+        "name": "voice",
+        "label": "Voice",
+        "required": false,
+        "defaultValue": "clear and friendly"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_faq_page",
+    "title": "FAQ page from product notes",
+    "difficulty": "beginner",
+    "tags": [
+      "faq",
+      "docs"
+    ],
+    "description": "FAQ pairs from messy notes with uncertainty labels.",
+    "body": "Act as a technical writer. Build an FAQ for {{product}} from notes: {{notes}}. Audience: {{audience}}. Produce 8–12 Q&A pairs grouped by theme. Flag uncertain answers as [CONFIRM WITH TEAM]. Do not invent pricing or SLAs.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": false,
+        "defaultValue": "new customers"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_whitepaper_brief",
+    "title": "Whitepaper content brief",
+    "difficulty": "intermediate",
+    "tags": [
+      "whitepaper",
+      "brief"
+    ],
+    "description": "Research-backed whitepaper brief with evidence plan.",
+    "body": "Act as a content strategist. Whitepaper brief on {{topic}} for {{audience}}. Goal: {{goal}}. Include title options, thesis, length, H1/H2 outline, evidence types, interview roles, distribution, success metrics. Constraints: {{constraints}}.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_rewrite_clarity",
+    "title": "Clarity rewrite",
+    "difficulty": "beginner",
+    "tags": [
+      "rewrite",
+      "editing"
+    ],
+    "description": "Rewrite dense copy for clarity without new claims.",
+    "body": "Act as a clarity editor. Rewrite for {{audience}} at about grade {{reading_level}}. Preserve factual claims; flag ambiguities as [CLARIFY]. Original: {{original_text}}. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "original_text",
+        "label": "Original text",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "reading_level",
+        "label": "Reading level",
+        "required": false,
+        "defaultValue": "8"
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "plain and direct"
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_content_podcast_show_notes",
+    "title": "Podcast show notes",
+    "difficulty": "intermediate",
+    "tags": [
+      "podcast",
+      "show-notes"
+    ],
+    "description": "Show notes with chapters and quotes from notes only.",
+    "body": "Act as a podcast producer. Show notes for {{episode_topic}} featuring {{guest}}. Notes: {{notes}}. Include title options, 100-word summary, chapter markers ([MM:SS] if unknown), pull quotes only if present, resources. Audience: {{audience}}.",
+    "variables": [
+      {
+        "name": "episode_topic",
+        "label": "Episode topic",
+        "required": true
+      },
+      {
+        "name": "guest",
+        "label": "Guest",
+        "required": false,
+        "defaultValue": "n/a"
+      },
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      }
+    ],
+    "category": "content"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_landing_hero",
+    "title": "Landing page hero copy",
+    "difficulty": "beginner",
+    "tags": [
+      "landing",
+      "hero"
+    ],
+    "description": "Hero headline, subhead, and CTA variants.",
+    "body": "Act as a conversion copywriter. Hero copy for {{product}} sold to {{audience}}. Benefit: {{benefit}}. Proof: {{proof}}. Produce 5 headlines, 3 subheads, 3 primary CTAs, 1 secondary CTA. Avoid hype. Mark legal-sensitive claims [LEGAL REVIEW].",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "benefit",
+        "label": "Benefit",
+        "required": true
+      },
+      {
+        "name": "proof",
+        "label": "Proof",
+        "required": false,
+        "defaultValue": "none provided"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_value_prop",
+    "title": "Value proposition block",
+    "difficulty": "intermediate",
+    "tags": [
+      "value-prop",
+      "positioning"
+    ],
+    "description": "Convert pains and gains into a crisp value prop.",
+    "body": "Act as a product marketer. Product: {{product}}. Audience: {{audience}}. Pains: {{pains}}. Gains: {{gains}}. Alternative: {{alternative}}. Features allowed: {{features}}. Write one-sentence value prop, 3 pillars, and differentiation vs the alternative. Do not invent features.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "pains",
+        "label": "Pains",
+        "required": true
+      },
+      {
+        "name": "gains",
+        "label": "Gains",
+        "required": true
+      },
+      {
+        "name": "alternative",
+        "label": "Alternative",
+        "required": true
+      },
+      {
+        "name": "features",
+        "label": "Features",
+        "required": true
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_ad_variants",
+    "title": "Paid ad variants",
+    "difficulty": "intermediate",
+    "tags": [
+      "ads",
+      "variants"
+    ],
+    "description": "Ad variants with hooks and CTAs.",
+    "body": "Act as a performance copywriter. Create {{variant_count}} ad variants for {{offer}} targeting {{audience}}. Constraints: {{platform_constraints}}. Angle: {{angle}}. Each: hook, body ≤ {{max_words}} words, CTA. Forbidden claims: {{forbidden_claims}}.",
+    "variables": [
+      {
+        "name": "offer",
+        "label": "Offer",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "angle",
+        "label": "Angle",
+        "required": true
+      },
+      {
+        "name": "platform_constraints",
+        "label": "Platform constraints",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "variant_count",
+        "label": "Variant count",
+        "required": false,
+        "defaultValue": "6"
+      },
+      {
+        "name": "max_words",
+        "label": "Max words",
+        "required": false,
+        "defaultValue": "40"
+      },
+      {
+        "name": "forbidden_claims",
+        "label": "Forbidden claims",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_tagline_system",
+    "title": "Tagline system",
+    "difficulty": "beginner",
+    "tags": [
+      "tagline",
+      "brand"
+    ],
+    "description": "Taglines across functional, emotional, and contrarian tones.",
+    "body": "Act as a brand copywriter. Tagline system for {{brand}} in {{category_space}}. Promise: {{promise}}. Personality: {{personality}}. Produce 8 taglines with one-line rationales. Avoid: {{cliches_to_avoid}}.",
+    "variables": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true
+      },
+      {
+        "name": "category_space",
+        "label": "Category",
+        "required": true
+      },
+      {
+        "name": "promise",
+        "label": "Promise",
+        "required": true
+      },
+      {
+        "name": "personality",
+        "label": "Personality",
+        "required": true
+      },
+      {
+        "name": "cliches_to_avoid",
+        "label": "Cliches to avoid",
+        "required": false,
+        "defaultValue": "synergy, next-gen, seamless"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_feature_to_benefit",
+    "title": "Feature-to-benefit translation",
+    "difficulty": "beginner",
+    "tags": [
+      "features",
+      "benefits"
+    ],
+    "description": "Map features into user benefits.",
+    "body": "Act as a product marketer. Translate features into benefit bullets for {{audience}}. Product: {{product}}. Features: {{features}}. Context: {{context}}. For each: benefit, when it matters, suggested proof type.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "features",
+        "label": "Features",
+        "required": true
+      },
+      {
+        "name": "context",
+        "label": "Context",
+        "required": false,
+        "defaultValue": "day-to-day work"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_pricing_page",
+    "title": "Pricing page copy",
+    "difficulty": "intermediate",
+    "tags": [
+      "pricing",
+      "saas"
+    ],
+    "description": "Plan blurbs without inventing prices.",
+    "body": "Act as a SaaS copywriter. Pricing page for {{product}}. Plans: {{plans}}. Audience: {{audience}}. Differentiation: {{differentiation}}. Write plan blurbs, who each plan is for, FAQ (6), objection handlers. Use [PRICE] tokens only. Compliance: {{compliance_notes}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "plans",
+        "label": "Plans",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "differentiation",
+        "label": "Differentiation",
+        "required": true
+      },
+      {
+        "name": "compliance_notes",
+        "label": "Compliance",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_onboarding_empty_state",
+    "title": "Empty-state microcopy",
+    "difficulty": "beginner",
+    "tags": [
+      "ux-writing",
+      "microcopy"
+    ],
+    "description": "Helpful empty states with next action.",
+    "body": "Act as a UX writer. Empty state for {{screen_name}} in {{product}}. Goal: {{user_goal}}. Primary action: {{primary_action}}. Constraints: {{constraints}}. Provide title, body ≤40 words, button label, optional secondary link. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "screen_name",
+        "label": "Screen",
+        "required": true
+      },
+      {
+        "name": "user_goal",
+        "label": "User goal",
+        "required": true
+      },
+      {
+        "name": "primary_action",
+        "label": "Primary action",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "encouraging and concise"
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_copy_ab_test_hypotheses",
+    "title": "Copy A/B test hypotheses",
+    "difficulty": "advanced",
+    "tags": [
+      "ab-test",
+      "cro"
+    ],
+    "description": "Testable copy hypotheses with metrics.",
+    "body": "Act as a CRO specialist. Element: {{element}}. Audience: {{audience}}. Current copy: {{current_copy}}. Metric: {{metric}}. Propose 5 A/B hypotheses with change, rationale, risk, and measurement. No guaranteed uplift claims.",
+    "variables": [
+      {
+        "name": "element",
+        "label": "Element",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "current_copy",
+        "label": "Current copy",
+        "required": true
+      },
+      {
+        "name": "metric",
+        "label": "Metric",
+        "required": true
+      }
+    ],
+    "category": "copywriting"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_launch_sequence",
+    "title": "Product launch email sequence",
+    "difficulty": "intermediate",
+    "tags": [
+      "launch",
+      "lifecycle"
+    ],
+    "description": "Three-email launch sequence with subjects and CTAs.",
+    "body": "Act as a lifecycle marketer. 3-email launch sequence for {{product}} to {{audience}}. Benefit: {{benefit}}. Proof: {{proof}}. CTA: {{cta}}. For each email: goal, 3 subjects, preview, body, CTA, day offset. No invented discounts. Constraints: {{constraints}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "benefit",
+        "label": "Benefit",
+        "required": true
+      },
+      {
+        "name": "proof",
+        "label": "Proof",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "cta",
+        "label": "CTA",
+        "required": false,
+        "defaultValue": "start free trial"
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_onboarding_drip",
+    "title": "Onboarding drip emails",
+    "difficulty": "intermediate",
+    "tags": [
+      "onboarding",
+      "activation"
+    ],
+    "description": "Onboarding drip mapped to activation.",
+    "body": "Act as a customer education email writer. {{day_count}}-day onboarding drip for {{product}}. Activation: {{activation_milestone}}. Audience: {{audience}}. Facts: {{product_facts}}. Each email: trigger, subject, body, single CTA, success signal.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "activation_milestone",
+        "label": "Activation milestone",
+        "required": true
+      },
+      {
+        "name": "product_facts",
+        "label": "Product facts",
+        "required": true
+      },
+      {
+        "name": "day_count",
+        "label": "Days",
+        "required": false,
+        "defaultValue": "7"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_reengagement",
+    "title": "Re-engagement email",
+    "difficulty": "beginner",
+    "tags": [
+      "winback",
+      "retention"
+    ],
+    "description": "Win-back email without guilt.",
+    "body": "Act as a retention marketer. Re-engage {{product}} users inactive {{inactive_period}}. Reasons: {{reasons}}. Value reminder: {{value_reminder}}. Offer: {{offer}}. 4 subjects + body. Unsubscribe-friendly. No guilt.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "inactive_period",
+        "label": "Inactive period",
+        "required": false,
+        "defaultValue": "30 days"
+      },
+      {
+        "name": "reasons",
+        "label": "Reasons",
+        "required": false,
+        "defaultValue": "busy; lost habit"
+      },
+      {
+        "name": "value_reminder",
+        "label": "Value reminder",
+        "required": true
+      },
+      {
+        "name": "offer",
+        "label": "Offer",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_sales_followup",
+    "title": "Sales follow-up after demo",
+    "difficulty": "beginner",
+    "tags": [
+      "sales",
+      "follow-up"
+    ],
+    "description": "Post-demo follow-up with next step.",
+    "body": "Act as an AE. Post-demo follow-up to {{prospect_name}} at {{company}}. Pain: {{pain}}. Highlights: {{highlights}}. Open questions: {{open_questions}}. Next step: {{next_step}}. Concise email + 3 subjects. No fake urgency.",
+    "variables": [
+      {
+        "name": "prospect_name",
+        "label": "Prospect",
+        "required": true
+      },
+      {
+        "name": "company",
+        "label": "Company",
+        "required": true
+      },
+      {
+        "name": "pain",
+        "label": "Pain",
+        "required": true
+      },
+      {
+        "name": "highlights",
+        "label": "Highlights",
+        "required": true
+      },
+      {
+        "name": "open_questions",
+        "label": "Open questions",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "next_step",
+        "label": "Next step",
+        "required": true
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_customer_success_checkin",
+    "title": "Customer success check-in",
+    "difficulty": "intermediate",
+    "tags": [
+      "cs",
+      "qbr"
+    ],
+    "description": "Check-in email with agenda and outcomes.",
+    "body": "Act as a CSM. Check-in to {{contact_name}} at {{account}}. Adoption: {{adoption_snapshot}}. Goals: {{goals}}. Risks: {{risks}}. Propose {{duration}}-minute agenda with 3 outcomes. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "contact_name",
+        "label": "Contact",
+        "required": true
+      },
+      {
+        "name": "account",
+        "label": "Account",
+        "required": true
+      },
+      {
+        "name": "adoption_snapshot",
+        "label": "Adoption",
+        "required": true
+      },
+      {
+        "name": "goals",
+        "label": "Goals",
+        "required": true
+      },
+      {
+        "name": "risks",
+        "label": "Risks",
+        "required": false,
+        "defaultValue": "none noted"
+      },
+      {
+        "name": "duration",
+        "label": "Duration",
+        "required": false,
+        "defaultValue": "30"
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "collaborative"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_incident_notification",
+    "title": "Incident status email",
+    "difficulty": "advanced",
+    "tags": [
+      "incident",
+      "trust"
+    ],
+    "description": "Incident email with impact and next update.",
+    "body": "Act as incident communications. Email about {{incident_name}}. Impact: {{impact}}. Status: {{status}}. Known: {{known}}. Actions: {{actions}}. Next update: {{next_update}}. Audience: {{audience}}. No blame or speculation.",
+    "variables": [
+      {
+        "name": "incident_name",
+        "label": "Incident",
+        "required": true
+      },
+      {
+        "name": "impact",
+        "label": "Impact",
+        "required": true
+      },
+      {
+        "name": "status",
+        "label": "Status",
+        "required": true
+      },
+      {
+        "name": "known",
+        "label": "Known",
+        "required": true
+      },
+      {
+        "name": "actions",
+        "label": "Actions",
+        "required": true
+      },
+      {
+        "name": "next_update",
+        "label": "Next update",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": false,
+        "defaultValue": "affected customers"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_partnership_outreach",
+    "title": "Partnership outreach email",
+    "difficulty": "intermediate",
+    "tags": [
+      "partnership",
+      "bd"
+    ],
+    "description": "Partnership intro with mutual value.",
+    "body": "Act as BD. Outreach to {{partner_name}} about collaborating with {{our_company}}. Mutual value: {{mutual_value}}. Proof: {{proof}}. Ask: {{ask}}. ≤150 words. 3 subjects.",
+    "variables": [
+      {
+        "name": "partner_name",
+        "label": "Partner",
+        "required": true
+      },
+      {
+        "name": "our_company",
+        "label": "Our company",
+        "required": true
+      },
+      {
+        "name": "mutual_value",
+        "label": "Mutual value",
+        "required": true
+      },
+      {
+        "name": "proof",
+        "label": "Proof",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "ask",
+        "label": "Ask",
+        "required": true
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_email_internal_announce",
+    "title": "Internal product announcement",
+    "difficulty": "beginner",
+    "tags": [
+      "internal",
+      "enablement"
+    ],
+    "description": "Internal announcement with talking points.",
+    "body": "Act as internal comms. Announce {{feature_or_change}} at {{company}}. Why: {{why}}. Customer impact: {{customer_impact}}. Employee actions: {{actions}}. FAQ (5) + talking points. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "feature_or_change",
+        "label": "Feature or change",
+        "required": true
+      },
+      {
+        "name": "company",
+        "label": "Company",
+        "required": true
+      },
+      {
+        "name": "why",
+        "label": "Why",
+        "required": true
+      },
+      {
+        "name": "customer_impact",
+        "label": "Customer impact",
+        "required": true
+      },
+      {
+        "name": "actions",
+        "label": "Actions",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "clear and upbeat"
+      }
+    ],
+    "category": "email"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_keyword_brief",
+    "title": "SEO content brief",
+    "difficulty": "intermediate",
+    "tags": [
+      "seo",
+      "brief"
+    ],
+    "description": "SEO brief from keyword and intent.",
+    "body": "Act as an SEO strategist. Keyword: {{primary_keyword}}. Intent: {{intent}}. Audience: {{audience}}. Competitors: {{competitors}}. Brief: title options, meta description, intent notes, outline, internal link opportunities as [URL NEEDED], FAQs, differentiation. Locale: {{locale}}.",
+    "variables": [
+      {
+        "name": "primary_keyword",
+        "label": "Primary keyword",
+        "required": true
+      },
+      {
+        "name": "intent",
+        "label": "Intent",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "competitors",
+        "label": "Competitors",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "locale",
+        "label": "Locale",
+        "required": false,
+        "defaultValue": "en-US"
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_meta_batch",
+    "title": "Title and meta batch",
+    "difficulty": "beginner",
+    "tags": [
+      "meta",
+      "titles"
+    ],
+    "description": "Title tags and meta descriptions in length budgets.",
+    "body": "Act as SEO copywriter. For each page in {{page_list}}, write 1 title (≤60 chars target) and 1 meta (≤155 chars). Brand: {{brand}}. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "page_list",
+        "label": "Pages with focus terms",
+        "required": true
+      },
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "helpful"
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_serp_outline",
+    "title": "SERP-informed outline",
+    "difficulty": "intermediate",
+    "tags": [
+      "serp",
+      "outline"
+    ],
+    "description": "Outline covering SERP themes and gaps.",
+    "body": "Act as SEO editor. Query: {{query}}. SERP themes: {{serp_themes}}. Gaps: {{gaps}}. Audience: {{audience}}. Outline covering necessary themes, unique gap sections, E-E-A-T signals. Word range: {{word_range}}.",
+    "variables": [
+      {
+        "name": "query",
+        "label": "Query",
+        "required": true
+      },
+      {
+        "name": "serp_themes",
+        "label": "SERP themes",
+        "required": true
+      },
+      {
+        "name": "gaps",
+        "label": "Gaps",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "word_range",
+        "label": "Word range",
+        "required": false,
+        "defaultValue": "1200-1800"
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_internal_linking",
+    "title": "Internal linking plan",
+    "difficulty": "intermediate",
+    "tags": [
+      "internal-links",
+      "seo"
+    ],
+    "description": "Internal links and anchor rationale.",
+    "body": "Act as SEO architect. New topic: {{topic}}. Site sections: {{site_sections}}. Existing pages: {{existing_pages}}. Propose 8–12 internal links with anchors and direction. Avoid over-optimized exact match.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "site_sections",
+        "label": "Site sections",
+        "required": true
+      },
+      {
+        "name": "existing_pages",
+        "label": "Existing pages",
+        "required": true
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_product_page",
+    "title": "Product page SEO copy",
+    "difficulty": "beginner",
+    "tags": [
+      "product-page",
+      "ecommerce"
+    ],
+    "description": "SEO-aware product page sections.",
+    "body": "Act as ecommerce SEO copywriter. Product: {{product}}. Category: {{category_name}}. Attributes: {{attributes}}. JTBD: {{jtbd}}. Primary term: {{primary_term}}. Secondary: {{secondary_terms}}. Write H1, intro, specs narrative, use-cases, FAQ (6). No invented certifications.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "category_name",
+        "label": "Category",
+        "required": true
+      },
+      {
+        "name": "attributes",
+        "label": "Attributes",
+        "required": true
+      },
+      {
+        "name": "jtbd",
+        "label": "Jobs to be done",
+        "required": true
+      },
+      {
+        "name": "primary_term",
+        "label": "Primary term",
+        "required": true
+      },
+      {
+        "name": "secondary_terms",
+        "label": "Secondary terms",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_local_landing",
+    "title": "Local SEO landing page",
+    "difficulty": "beginner",
+    "tags": [
+      "local",
+      "landing"
+    ],
+    "description": "Local service page with NAP placeholders.",
+    "body": "Act as local SEO copywriter. Service: {{service}} in {{city_region}}. Business: {{business_name}}. Differentiators: {{differentiators}}. Service area: {{service_area}}. Write H1, intro, services, why-us, process, FAQ. Use [ADDRESS], [PHONE], [HOURS]. No fake reviews.",
+    "variables": [
+      {
+        "name": "service",
+        "label": "Service",
+        "required": true
+      },
+      {
+        "name": "city_region",
+        "label": "City or region",
+        "required": true
+      },
+      {
+        "name": "business_name",
+        "label": "Business",
+        "required": true
+      },
+      {
+        "name": "differentiators",
+        "label": "Differentiators",
+        "required": true
+      },
+      {
+        "name": "service_area",
+        "label": "Service area",
+        "required": true
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_content_refresh",
+    "title": "Content refresh plan",
+    "difficulty": "advanced",
+    "tags": [
+      "refresh",
+      "decay"
+    ],
+    "description": "Refresh plan for underperforming URL.",
+    "body": "Act as SEO content lead. Topic: {{topic}}. Issues: {{issues}}. Performance notes: {{performance_notes}}. Plan: keep/cut/expand, new FAQs, freshness signals, internal links, republish checklist. Do not invent ranking data.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "issues",
+        "label": "Issues",
+        "required": true
+      },
+      {
+        "name": "performance_notes",
+        "label": "Performance notes",
+        "required": true
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_seo_schema_suggestions",
+    "title": "Structured data suggestions",
+    "difficulty": "advanced",
+    "tags": [
+      "schema",
+      "technical-seo"
+    ],
+    "description": "Schema types and JSON-LD skeleton.",
+    "body": "Act as technical SEO. Page type: {{page_type}}. Summary: {{content_summary}}. Site: {{site_name}}. Suggest schema.org types, properties, JSON-LD skeleton with placeholders, and invalid markup risks.",
+    "variables": [
+      {
+        "name": "page_type",
+        "label": "Page type",
+        "required": true
+      },
+      {
+        "name": "content_summary",
+        "label": "Content summary",
+        "required": true
+      },
+      {
+        "name": "site_name",
+        "label": "Site name",
+        "required": true
+      }
+    ],
+    "category": "seo"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_launch_thread",
+    "title": "Launch announcement thread",
+    "difficulty": "beginner",
+    "tags": [
+      "launch",
+      "thread"
+    ],
+    "description": "Multi-post launch thread with proof and CTA.",
+    "body": "Act as a social strategist. {{platform}} thread announcing {{product_or_feature}} for {{audience}}. Proof: {{proof}}. CTA: {{cta}}. {{post_count}} posts. Tone: {{tone}}. No fake social proof.",
+    "variables": [
+      {
+        "name": "platform",
+        "label": "Platform",
+        "required": false,
+        "defaultValue": "X"
+      },
+      {
+        "name": "product_or_feature",
+        "label": "Product or feature",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "proof",
+        "label": "Proof",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "cta",
+        "label": "CTA",
+        "required": true
+      },
+      {
+        "name": "post_count",
+        "label": "Posts",
+        "required": false,
+        "defaultValue": "6"
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "direct"
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_linkedin_thought",
+    "title": "LinkedIn thought post",
+    "difficulty": "intermediate",
+    "tags": [
+      "linkedin",
+      "b2b"
+    ],
+    "description": "Professional post with practical takeaway.",
+    "body": "Act as LinkedIn ghostwriter for a {{persona}}. Insight: {{insight}}. Audience: {{audience}}. Strong first line, short paragraphs, one takeaway, soft CTA. Max 3 hashtags related to {{topic}}. No engagement bait.",
+    "variables": [
+      {
+        "name": "persona",
+        "label": "Persona",
+        "required": true
+      },
+      {
+        "name": "insight",
+        "label": "Insight",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_content_calendar",
+    "title": "Two-week social calendar",
+    "difficulty": "intermediate",
+    "tags": [
+      "calendar",
+      "planning"
+    ],
+    "description": "14-day calendar by pillar and format.",
+    "body": "Act as social planner. Brand: {{brand}}. Pillars: {{pillars}}. Platforms: {{platforms}}. Goal: {{goal}}. 14-day calendar: date, platform, pillar, format, angle, CTA. Include 2 experiments. Constraints: {{constraints}}.",
+    "variables": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true
+      },
+      {
+        "name": "pillars",
+        "label": "Pillars",
+        "required": true
+      },
+      {
+        "name": "platforms",
+        "label": "Platforms",
+        "required": true
+      },
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_community_reply",
+    "title": "Community reply pack",
+    "difficulty": "beginner",
+    "tags": [
+      "community",
+      "replies"
+    ],
+    "description": "Reply variants for common questions.",
+    "body": "Act as community manager for {{product}}. Question theme: {{question_cluster}}. Facts: {{facts}}. Write 5 reply variants (brief, detailed, playful, formal, docs redirect). Never invent policy.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "question_cluster",
+        "label": "Question theme",
+        "required": true
+      },
+      {
+        "name": "facts",
+        "label": "Facts",
+        "required": true
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_short_video_script",
+    "title": "Short-form video script",
+    "difficulty": "intermediate",
+    "tags": [
+      "video",
+      "script"
+    ],
+    "description": "15–45s script with hook and CTA.",
+    "body": "Act as short-form video writer. Product: {{product}}. Hook: {{hook}}. Demo: {{demo_point}}. CTA: {{cta}}. {{duration_seconds}}s script with on-screen text, spoken lines, shot notes. Platform: {{platform}}. Audience: {{audience}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "hook",
+        "label": "Hook",
+        "required": true
+      },
+      {
+        "name": "demo_point",
+        "label": "Demo point",
+        "required": true
+      },
+      {
+        "name": "cta",
+        "label": "CTA",
+        "required": true
+      },
+      {
+        "name": "duration_seconds",
+        "label": "Seconds",
+        "required": false,
+        "defaultValue": "30"
+      },
+      {
+        "name": "platform",
+        "label": "Platform",
+        "required": false,
+        "defaultValue": "short-form video"
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_crisis_holding",
+    "title": "Social crisis holding statement",
+    "difficulty": "advanced",
+    "tags": [
+      "crisis",
+      "comms"
+    ],
+    "description": "Holding statement during an unfolding issue.",
+    "body": "Act as crisis communications. Issue: {{issue}}. Facts: {{facts}}. Unknowns: {{unknowns}}. Holding statement for {{platforms}} under {{max_chars}} chars if possible, plus longer follow-up template. Empathy first; no speculation.",
+    "variables": [
+      {
+        "name": "issue",
+        "label": "Issue",
+        "required": true
+      },
+      {
+        "name": "facts",
+        "label": "Facts",
+        "required": true
+      },
+      {
+        "name": "unknowns",
+        "label": "Unknowns",
+        "required": true
+      },
+      {
+        "name": "platforms",
+        "label": "Platforms",
+        "required": false,
+        "defaultValue": "X and LinkedIn"
+      },
+      {
+        "name": "max_chars",
+        "label": "Max chars",
+        "required": false,
+        "defaultValue": "500"
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_ugc_brief",
+    "title": "UGC creator brief",
+    "difficulty": "intermediate",
+    "tags": [
+      "ugc",
+      "creator"
+    ],
+    "description": "Creator brief with brand safety rules.",
+    "body": "Act as creator marketing manager. Product: {{product}}. Goal: {{goal}}. Audience: {{audience}}. UGC brief: concept, hooks, must-say, must-not-say, length, deliverables, brand safety. Claims only from: {{approved_claims}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "approved_claims",
+        "label": "Approved claims",
+        "required": true
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_social_poll_engagement",
+    "title": "Poll and engagement prompts",
+    "difficulty": "beginner",
+    "tags": [
+      "polls",
+      "engagement"
+    ],
+    "description": "Polls that spark useful conversation.",
+    "body": "Act as community strategist for {{brand}}. Theme: {{theme}}. Audience: {{audience}}. Create 5 polls with options, why each matters, and brand follow-up prompt. Avoid: {{avoid_topics}}.",
+    "variables": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "required": true
+      },
+      {
+        "name": "theme",
+        "label": "Theme",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "avoid_topics",
+        "label": "Avoid topics",
+        "required": false,
+        "defaultValue": "politics, religion"
+      }
+    ],
+    "category": "social"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_interview_guide",
+    "title": "User interview guide",
+    "difficulty": "intermediate",
+    "tags": [
+      "interviews",
+      "ux-research"
+    ],
+    "description": "Discussion guide with warm-up and probes.",
+    "body": "Act as UX researcher. Goal: {{study_goal}}. Participants: {{participants}}. Hypotheses: {{hypotheses}}. 45-minute guide: consent, warm-up, core questions, probes, tasks, wrap-up. Avoid leading questions. Constraints: {{constraints}}.",
+    "variables": [
+      {
+        "name": "study_goal",
+        "label": "Study goal",
+        "required": true
+      },
+      {
+        "name": "participants",
+        "label": "Participants",
+        "required": true
+      },
+      {
+        "name": "hypotheses",
+        "label": "Hypotheses",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_synthesis",
+    "title": "Qual research synthesis",
+    "difficulty": "intermediate",
+    "tags": [
+      "synthesis",
+      "qual"
+    ],
+    "description": "Themes with evidence separated from interpretation.",
+    "body": "Act as research synthesizer. Question: {{research_question}}. Notes: {{notes}}. Produce themes, evidence, contradictions, opportunities, open questions. Keep interpretation separate. Stakeholder: {{stakeholder}}.",
+    "variables": [
+      {
+        "name": "research_question",
+        "label": "Research question",
+        "required": true
+      },
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "stakeholder",
+        "label": "Stakeholder",
+        "required": false,
+        "defaultValue": "product team"
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_competitor_teardown",
+    "title": "Competitor teardown",
+    "difficulty": "intermediate",
+    "tags": [
+      "competitive",
+      "teardown"
+    ],
+    "description": "Structured competitor product teardown.",
+    "body": "Act as competitive analyst. Competitor: {{competitor}}. Category: {{category_name}}. Our product: {{our_product}}. Facts: {{facts}}. Teardown: positioning, ICP clues, strengths, weaknesses, pricing signals if known, UX notes, implications. Mark [UNKNOWN].",
+    "variables": [
+      {
+        "name": "competitor",
+        "label": "Competitor",
+        "required": true
+      },
+      {
+        "name": "category_name",
+        "label": "Category",
+        "required": true
+      },
+      {
+        "name": "our_product",
+        "label": "Our product",
+        "required": true
+      },
+      {
+        "name": "facts",
+        "label": "Facts",
+        "required": true
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_survey_design",
+    "title": "Survey questionnaire design",
+    "difficulty": "advanced",
+    "tags": [
+      "survey",
+      "quant"
+    ],
+    "description": "Unbiased survey mapped to a decision.",
+    "body": "Act as survey methodologist. Decision: {{decision}}. Audience: {{audience}}. Constraints: {{constraints}}. Design survey sections, types, scales, logic, screening, bias checks. Max questions: {{max_questions}}.",
+    "variables": [
+      {
+        "name": "decision",
+        "label": "Decision",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "max_questions",
+        "label": "Max questions",
+        "required": false,
+        "defaultValue": "15"
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_lit_review",
+    "title": "Lightweight literature brief",
+    "difficulty": "advanced",
+    "tags": [
+      "literature",
+      "secondary-research"
+    ],
+    "description": "Summarize only provided sources.",
+    "body": "Act as research analyst. Question: {{question}}. Sources (only these): {{sources}}. Brief: findings, agreements, disagreements, caveats, gaps. Cite by provided labels. No external facts.",
+    "variables": [
+      {
+        "name": "question",
+        "label": "Question",
+        "required": true
+      },
+      {
+        "name": "sources",
+        "label": "Labeled sources",
+        "required": true
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_journey_map",
+    "title": "Journey map from notes",
+    "difficulty": "intermediate",
+    "tags": [
+      "journey-map",
+      "ux"
+    ],
+    "description": "Journey stages, emotions, opportunities.",
+    "body": "Act as service designer. Persona: {{persona}}. Scenario: {{scenario}}. Notes: {{notes}}. Stages with actions, thoughts, emotions, pains, opportunities. Label low-confidence inferences. Goal: {{goal}}.",
+    "variables": [
+      {
+        "name": "persona",
+        "label": "Persona",
+        "required": true
+      },
+      {
+        "name": "scenario",
+        "label": "Scenario",
+        "required": true
+      },
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_experiment_design",
+    "title": "Experiment design brief",
+    "difficulty": "advanced",
+    "tags": [
+      "experiment",
+      "hypothesis"
+    ],
+    "description": "Hypothesis, metrics, and guardrails.",
+    "body": "Act as product analyst. Idea: {{idea}}. Problem: {{problem}}. Design: hypothesis, primary metric, guardrails, segments, duration guidance, sample-size caveats, rollout. Success: {{success_definition}}. Risks: {{risks}}.",
+    "variables": [
+      {
+        "name": "idea",
+        "label": "Idea",
+        "required": true
+      },
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "success_definition",
+        "label": "Success definition",
+        "required": true
+      },
+      {
+        "name": "risks",
+        "label": "Risks",
+        "required": false,
+        "defaultValue": "none listed"
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_research_stakeholder_interview",
+    "title": "Stakeholder discovery interview",
+    "difficulty": "beginner",
+    "tags": [
+      "stakeholders",
+      "discovery"
+    ],
+    "description": "Internal interview script for framing.",
+    "body": "Act as discovery facilitator. Initiative: {{initiative}}. Role: {{role}}. 30-minute script: goals, constraints, metrics, risks, open decisions + note template. Context: {{context}}.",
+    "variables": [
+      {
+        "name": "initiative",
+        "label": "Initiative",
+        "required": true
+      },
+      {
+        "name": "role",
+        "label": "Role",
+        "required": true
+      },
+      {
+        "name": "context",
+        "label": "Context",
+        "required": false,
+        "defaultValue": "early discovery"
+      }
+    ],
+    "category": "research"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_discovery_call",
+    "title": "Discovery call script",
+    "difficulty": "intermediate",
+    "tags": [
+      "discovery",
+      "calls"
+    ],
+    "description": "Discovery agenda with qualification questions.",
+    "body": "Act as enterprise AE coach. Product: {{product}}. ICP: {{icp}}. Discovery plan: opener, situation, problem, impact, decision-process questions, next-step close. No manipulative tactics. Context: {{deal_context}}.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "icp",
+        "label": "ICP",
+        "required": true
+      },
+      {
+        "name": "deal_context",
+        "label": "Deal context",
+        "required": false,
+        "defaultValue": "first call"
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_outbound_sequence",
+    "title": "Outbound email sequence",
+    "difficulty": "intermediate",
+    "tags": [
+      "outbound",
+      "prospecting"
+    ],
+    "description": "Multi-touch outbound with personalization slots.",
+    "body": "Act as an SDR. Offer: {{offer}}. ICP: {{icp}}. Pain: {{pain}}. Proof: {{proof}}. Write a {{touch_count}}-touch outbound email sequence. Each touch: goal, subject, body ≤120 words, personalization slots marked with double curly braces around field names. Soft CTA. Compliance: {{compliance}}.",
+    "variables": [
+      {
+        "name": "offer",
+        "label": "Offer",
+        "required": true
+      },
+      {
+        "name": "icp",
+        "label": "ICP",
+        "required": true
+      },
+      {
+        "name": "pain",
+        "label": "Pain",
+        "required": true
+      },
+      {
+        "name": "proof",
+        "label": "Proof",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "touch_count",
+        "label": "Touches",
+        "required": false,
+        "defaultValue": "4"
+      },
+      {
+        "name": "compliance",
+        "label": "Compliance",
+        "required": false,
+        "defaultValue": "no purchased list claims"
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_proposal_narrative",
+    "title": "Proposal narrative",
+    "difficulty": "advanced",
+    "tags": [
+      "proposal",
+      "executive"
+    ],
+    "description": "Executive proposal storyline.",
+    "body": "Act as solutions consultant. Prospect: {{prospect}}. Problem: {{problem}}. Solution: {{solution}}. Scope: {{scope}}. Timeline: {{timeline}}. Pricing approach: {{pricing_approach}}. Narrative: executive summary, approach, outcomes, risks/mitigations, next steps. No invented ROI.",
+    "variables": [
+      {
+        "name": "prospect",
+        "label": "Prospect",
+        "required": true
+      },
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "solution",
+        "label": "Solution",
+        "required": true
+      },
+      {
+        "name": "scope",
+        "label": "Scope",
+        "required": true
+      },
+      {
+        "name": "timeline",
+        "label": "Timeline",
+        "required": true
+      },
+      {
+        "name": "pricing_approach",
+        "label": "Pricing approach",
+        "required": false,
+        "defaultValue": "to be confirmed"
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_objection_handling",
+    "title": "Objection handling pack",
+    "difficulty": "intermediate",
+    "tags": [
+      "objections",
+      "enablement"
+    ],
+    "description": "Responses with clarifying questions.",
+    "body": "Act as sales enablement. Product: {{product}}. Objections: {{objections}}. Proof points: {{proof_points}}. For each: clarify question, response, story cue, when to loop SE. Consultative tone.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "objections",
+        "label": "Objections",
+        "required": true
+      },
+      {
+        "name": "proof_points",
+        "label": "Proof points",
+        "required": true
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_account_plan",
+    "title": "Strategic account plan",
+    "difficulty": "advanced",
+    "tags": [
+      "account-planning",
+      "enterprise"
+    ],
+    "description": "Stakeholders, risks, 90-day plays.",
+    "body": "Act as strategic account lead. Account: {{account}}. ARR context: {{arr_context}}. Stakeholders: {{stakeholders}}. Goals: {{goals}}. Competitors: {{competitors}}. Plan: whitespace, risks, multi-thread map, 90-day plays, mutual success milestones.",
+    "variables": [
+      {
+        "name": "account",
+        "label": "Account",
+        "required": true
+      },
+      {
+        "name": "arr_context",
+        "label": "ARR context",
+        "required": true
+      },
+      {
+        "name": "stakeholders",
+        "label": "Stakeholders",
+        "required": true
+      },
+      {
+        "name": "goals",
+        "label": "Goals",
+        "required": true
+      },
+      {
+        "name": "competitors",
+        "label": "Competitors",
+        "required": false,
+        "defaultValue": "unknown"
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_demo_storyboard",
+    "title": "Demo storyboard",
+    "difficulty": "intermediate",
+    "tags": [
+      "demo",
+      "se"
+    ],
+    "description": "Outcome-led demo flow with skip rules.",
+    "body": "Act as sales engineer. Pain: {{pain}}. Persona: {{persona}}. Capabilities allowed: {{capabilities}}. {{minutes}}-minute storyboard: scenes, talk track, clicks, proof, skip rules. Next step: {{next_step}}.",
+    "variables": [
+      {
+        "name": "pain",
+        "label": "Pain",
+        "required": true
+      },
+      {
+        "name": "persona",
+        "label": "Persona",
+        "required": true
+      },
+      {
+        "name": "capabilities",
+        "label": "Capabilities",
+        "required": true
+      },
+      {
+        "name": "minutes",
+        "label": "Minutes",
+        "required": false,
+        "defaultValue": "20"
+      },
+      {
+        "name": "next_step",
+        "label": "Next step",
+        "required": true
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_roi_model_questions",
+    "title": "ROI discovery questionnaire",
+    "difficulty": "advanced",
+    "tags": [
+      "roi",
+      "value"
+    ],
+    "description": "Questions for a credible value model.",
+    "body": "Act as value engineer. Product: {{product}}. Value drivers: {{value_drivers}}. Industry: {{industry}}. Questionnaire for ROI model: baselines, status-quo cost, adoption assumptions, risks. Formulas as placeholders only.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "value_drivers",
+        "label": "Value drivers",
+        "required": true
+      },
+      {
+        "name": "industry",
+        "label": "Industry",
+        "required": false,
+        "defaultValue": "general B2B"
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_sales_champion_enablement",
+    "title": "Champion enablement one-pager",
+    "difficulty": "intermediate",
+    "tags": [
+      "champion",
+      "enablement"
+    ],
+    "description": "Forwardable one-pager for internal buy-in.",
+    "body": "Act as sales partner to a champion. Champion role: {{champion_role}}. Economic buyer: {{economic_buyer}}. Problem: {{problem}}. Solution: {{solution}}. One-pager: problem cost, approach, risks, ask, FAQ. Facts only: {{approved_facts}}.",
+    "variables": [
+      {
+        "name": "champion_role",
+        "label": "Champion role",
+        "required": true
+      },
+      {
+        "name": "economic_buyer",
+        "label": "Economic buyer",
+        "required": true
+      },
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "solution",
+        "label": "Solution",
+        "required": true
+      },
+      {
+        "name": "approved_facts",
+        "label": "Approved facts",
+        "required": true
+      }
+    ],
+    "category": "sales"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_reply_general",
+    "title": "Support reply (general)",
+    "difficulty": "beginner",
+    "tags": [
+      "support",
+      "reply"
+    ],
+    "description": "Empathetic reply with next steps.",
+    "body": "Act as support specialist. Issue: {{issue}}. Known facts: {{known_facts}}. Policy: {{policy}}. Reply: acknowledge impact, state knowns, next steps, follow-up expectation. Tone: {{tone}}. No promises beyond policy.",
+    "variables": [
+      {
+        "name": "issue",
+        "label": "Issue",
+        "required": true
+      },
+      {
+        "name": "known_facts",
+        "label": "Known facts",
+        "required": true
+      },
+      {
+        "name": "policy",
+        "label": "Policy",
+        "required": false,
+        "defaultValue": "standard support policy"
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "calm and helpful"
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_bug_triage",
+    "title": "Bug report triage response",
+    "difficulty": "intermediate",
+    "tags": [
+      "bug",
+      "triage"
+    ],
+    "description": "Customer repro ask + internal triage note.",
+    "body": "Act as L2 support. Bug: {{bug_summary}}. Environment: {{environment}}. Product: {{product}}. Customer reply requesting missing repro details + internal engineering triage note with provisional severity.",
+    "variables": [
+      {
+        "name": "bug_summary",
+        "label": "Bug summary",
+        "required": true
+      },
+      {
+        "name": "environment",
+        "label": "Environment",
+        "required": false,
+        "defaultValue": "unknown"
+      },
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_macro_library",
+    "title": "Support macro set",
+    "difficulty": "beginner",
+    "tags": [
+      "macros",
+      "knowledge"
+    ],
+    "description": "Reusable macros for a topic cluster.",
+    "body": "Act as support ops. Topic: {{topic}}. Product: {{product}}. Steps: {{steps}}. Create 5 macros: acknowledge, gather info, workaround, resolved, escalate. Keep variable slots as named placeholders in plain language. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "steps",
+        "label": "Steps",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "clear"
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_escalation",
+    "title": "Escalation summary",
+    "difficulty": "intermediate",
+    "tags": [
+      "escalation",
+      "handoff"
+    ],
+    "description": "Handoff summary for engineering.",
+    "body": "Act as support lead. Customer: {{customer}}. Impact: {{impact}}. Timeline: {{timeline}}. Troubleshooting: {{troubleshooting}}. Ask: {{ask}}. Write escalation ticket with severity rationale and comms status.",
+    "variables": [
+      {
+        "name": "customer",
+        "label": "Customer",
+        "required": true
+      },
+      {
+        "name": "impact",
+        "label": "Impact",
+        "required": true
+      },
+      {
+        "name": "timeline",
+        "label": "Timeline",
+        "required": true
+      },
+      {
+        "name": "troubleshooting",
+        "label": "Troubleshooting",
+        "required": true
+      },
+      {
+        "name": "ask",
+        "label": "Ask",
+        "required": true
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_refund_policy",
+    "title": "Billing exception reply",
+    "difficulty": "advanced",
+    "tags": [
+      "billing",
+      "policy"
+    ],
+    "description": "Policy-safe billing reply with options.",
+    "body": "Act as billing support. Request: {{request}}. Policy: {{policy}}. Account facts: {{account_facts}}. Locale: {{locale}}. Explain policy, options, next steps. If exception needs manager approval, say [MANAGER APPROVAL].",
+    "variables": [
+      {
+        "name": "request",
+        "label": "Request",
+        "required": true
+      },
+      {
+        "name": "policy",
+        "label": "Policy",
+        "required": true
+      },
+      {
+        "name": "account_facts",
+        "label": "Account facts",
+        "required": true
+      },
+      {
+        "name": "locale",
+        "label": "Locale",
+        "required": false,
+        "defaultValue": "en-US"
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_howto",
+    "title": "How-to help article",
+    "difficulty": "beginner",
+    "tags": [
+      "help-center",
+      "howto"
+    ],
+    "description": "Step-by-step help article from UI notes.",
+    "body": "Act as KB author. Task: {{task}}. Product: {{product}}. UI notes: {{ui_notes}}. Audience: {{audience}}. Article: title, intro, prerequisites, numbered steps, expected result, troubleshooting. Uncertain labels: [CONFIRM UI].",
+    "variables": [
+      {
+        "name": "task",
+        "label": "Task",
+        "required": true
+      },
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "ui_notes",
+        "label": "UI notes",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": false,
+        "defaultValue": "end users"
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_status_update",
+    "title": "Ticket status update",
+    "difficulty": "beginner",
+    "tags": [
+      "status",
+      "cx"
+    ],
+    "description": "Proactive in-progress status update.",
+    "body": "Act as support. Context: {{context}}. Progress: {{progress}}. Blockers: {{blockers}}. Next action: {{next_action}}. Short proactive update. Tone: {{tone}}.",
+    "variables": [
+      {
+        "name": "context",
+        "label": "Context",
+        "required": true
+      },
+      {
+        "name": "progress",
+        "label": "Progress",
+        "required": true
+      },
+      {
+        "name": "blockers",
+        "label": "Blockers",
+        "required": false,
+        "defaultValue": "none"
+      },
+      {
+        "name": "next_action",
+        "label": "Next action",
+        "required": true
+      },
+      {
+        "name": "tone",
+        "label": "Tone",
+        "required": false,
+        "defaultValue": "transparent"
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_support_kb_from_tickets",
+    "title": "KB draft from ticket patterns",
+    "difficulty": "intermediate",
+    "tags": [
+      "kb",
+      "deflection"
+    ],
+    "description": "Draft KB from repeated ticket themes.",
+    "body": "Act as support content lead. Theme: {{theme}}. Snippets: {{snippets}}. Known fix: {{known_fix}}. Product: {{product}}. Draft public KB + shorter macro. Flag conflicting guidance.",
+    "variables": [
+      {
+        "name": "theme",
+        "label": "Theme",
+        "required": true
+      },
+      {
+        "name": "snippets",
+        "label": "Snippets",
+        "required": true
+      },
+      {
+        "name": "known_fix",
+        "label": "Known fix",
+        "required": true
+      },
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      }
+    ],
+    "category": "support"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_code_review",
+    "title": "Focused code review",
+    "difficulty": "advanced",
+    "tags": [
+      "review",
+      "pr"
+    ],
+    "description": "Review for correctness, tests, and risk.",
+    "body": "Act as code reviewer for {{language_or_stack}}. Summary: {{change_summary}}. Diff/description: {{diff}}. Identify correctness risks, missing tests, security/privacy, performance, smallest follow-ups. Severity-tag findings. No unrelated rewrites.",
+    "variables": [
+      {
+        "name": "language_or_stack",
+        "label": "Stack",
+        "required": true
+      },
+      {
+        "name": "change_summary",
+        "label": "Summary",
+        "required": true
+      },
+      {
+        "name": "diff",
+        "label": "Diff or description",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_design_doc",
+    "title": "Technical design doc skeleton",
+    "difficulty": "advanced",
+    "tags": [
+      "design-doc",
+      "architecture"
+    ],
+    "description": "Design doc structure for a system change.",
+    "body": "Act as staff engineer. Problem: {{problem}}. Goals: {{goals}}. Non-goals: {{non_goals}}. Constraints: {{constraints}}. Stack: {{stack}}. Draft: context, options, proposed design, data model, APIs, failure modes, rollout, observability, open questions.",
+    "variables": [
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "goals",
+        "label": "Goals",
+        "required": true
+      },
+      {
+        "name": "non_goals",
+        "label": "Non-goals",
+        "required": false,
+        "defaultValue": "none listed"
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": true
+      },
+      {
+        "name": "stack",
+        "label": "Stack",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_bug_repro",
+    "title": "Bug reproduction plan",
+    "difficulty": "intermediate",
+    "tags": [
+      "debugging",
+      "repro"
+    ],
+    "description": "Repro steps and hypotheses from a vague report.",
+    "body": "Act as debugging partner. Report: {{bug_report}}. System: {{system}}. Produce minimal repro, expected vs actual, environment matrix, ordered hypotheses, instrumentation. Do not invent stack traces.",
+    "variables": [
+      {
+        "name": "bug_report",
+        "label": "Bug report",
+        "required": true
+      },
+      {
+        "name": "system",
+        "label": "System",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_test_plan",
+    "title": "Test plan for a feature",
+    "difficulty": "intermediate",
+    "tags": [
+      "testing",
+      "qa"
+    ],
+    "description": "Unit, integration, and edge-case plan.",
+    "body": "Act as QA-minded engineer. Feature: {{feature}}. Acceptance: {{acceptance_criteria}}. Risks: {{risks}}. Stack: {{stack}}. Test plan: unit, integration, edge, negative, regression; automated vs manual.",
+    "variables": [
+      {
+        "name": "feature",
+        "label": "Feature",
+        "required": true
+      },
+      {
+        "name": "acceptance_criteria",
+        "label": "Acceptance criteria",
+        "required": true
+      },
+      {
+        "name": "risks",
+        "label": "Risks",
+        "required": false,
+        "defaultValue": "none listed"
+      },
+      {
+        "name": "stack",
+        "label": "Stack",
+        "required": false,
+        "defaultValue": "unspecified"
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_api_design",
+    "title": "REST API shape proposal",
+    "difficulty": "advanced",
+    "tags": [
+      "api",
+      "rest"
+    ],
+    "description": "Resources, endpoints, and error model.",
+    "body": "Act as API designer. Domain: {{domain}}. Use cases: {{use_cases}}. Constraints: {{constraints}}. Compatibility: {{compatibility}}. Propose resources, endpoints, sketches, idempotency, authz, errors. Prefer boring REST.",
+    "variables": [
+      {
+        "name": "domain",
+        "label": "Domain",
+        "required": true
+      },
+      {
+        "name": "use_cases",
+        "label": "Use cases",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": true
+      },
+      {
+        "name": "compatibility",
+        "label": "Compatibility",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_refactor_plan",
+    "title": "Safe refactor plan",
+    "difficulty": "advanced",
+    "tags": [
+      "refactor",
+      "legacy"
+    ],
+    "description": "Incremental refactor with safety checks.",
+    "body": "Act as refactoring specialist. Area: {{area}}. Problem: {{problem}}. Constraints: {{constraints}}. Incremental plan with green intermediate states, tests-first steps, rollback notes. No big-bang rewrite.",
+    "variables": [
+      {
+        "name": "area",
+        "label": "Area",
+        "required": true
+      },
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_incident_postmortem",
+    "title": "Incident postmortem draft",
+    "difficulty": "advanced",
+    "tags": [
+      "postmortem",
+      "reliability"
+    ],
+    "description": "Blameless postmortem from timeline notes.",
+    "body": "Act as SRE. Incident: {{incident}}. Timeline: {{timeline}}. Impact: {{impact}}. Factors: {{factors}}. Draft blameless postmortem: summary, timeline, contributing factors, goods/bads, action items with [OWNER].",
+    "variables": [
+      {
+        "name": "incident",
+        "label": "Incident",
+        "required": true
+      },
+      {
+        "name": "timeline",
+        "label": "Timeline",
+        "required": true
+      },
+      {
+        "name": "impact",
+        "label": "Impact",
+        "required": true
+      },
+      {
+        "name": "factors",
+        "label": "Factors",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_coding_prompt_for_codegen",
+    "title": "Spec-to-implementation prompt",
+    "difficulty": "intermediate",
+    "tags": [
+      "codegen",
+      "agent"
+    ],
+    "description": "Tight implementation prompt for a coding agent.",
+    "body": "Act as eng lead briefing a coding agent. Feature: {{feature}}. Conventions: {{conventions}}. Files: {{files}}. Acceptance: {{acceptance}}. Stack: {{stack}}. Single implementation prompt with scope fences, non-goals, definition of done.",
+    "variables": [
+      {
+        "name": "feature",
+        "label": "Feature",
+        "required": true
+      },
+      {
+        "name": "conventions",
+        "label": "Conventions",
+        "required": true
+      },
+      {
+        "name": "files",
+        "label": "Files",
+        "required": false,
+        "defaultValue": "unknown"
+      },
+      {
+        "name": "acceptance",
+        "label": "Acceptance",
+        "required": true
+      },
+      {
+        "name": "stack",
+        "label": "Stack",
+        "required": true
+      }
+    ],
+    "category": "coding"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_prd",
+    "title": "PRD draft",
+    "difficulty": "intermediate",
+    "tags": [
+      "prd",
+      "requirements"
+    ],
+    "description": "Problem-framed PRD with non-goals.",
+    "body": "Act as PM. Problem: {{problem}}. Users: {{users}}. Goals: {{goals}}. Constraints: {{constraints}}. PRD: context, problem, goals/non-goals, stories, MoSCoW requirements, metrics, risks, open questions. No invented market sizes.",
+    "variables": [
+      {
+        "name": "problem",
+        "label": "Problem",
+        "required": true
+      },
+      {
+        "name": "users",
+        "label": "Users",
+        "required": true
+      },
+      {
+        "name": "goals",
+        "label": "Goals",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_decision_memo",
+    "title": "Decision memo",
+    "difficulty": "intermediate",
+    "tags": [
+      "decision",
+      "memo"
+    ],
+    "description": "Options, recommendation, and risks.",
+    "body": "Act as PM. Decision: {{decision}}. Context: {{context}}. Options: {{options}}. Memo for {{audience}}: recommendation, tradeoffs, risks, reversibility, assumptions to verify by {{deadline}}.",
+    "variables": [
+      {
+        "name": "decision",
+        "label": "Decision",
+        "required": true
+      },
+      {
+        "name": "context",
+        "label": "Context",
+        "required": true
+      },
+      {
+        "name": "options",
+        "label": "Options",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": false,
+        "defaultValue": "leadership"
+      },
+      {
+        "name": "deadline",
+        "label": "Deadline",
+        "required": false,
+        "defaultValue": "TBD"
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_roadmap_narrative",
+    "title": "Roadmap narrative",
+    "difficulty": "intermediate",
+    "tags": [
+      "roadmap",
+      "strategy"
+    ],
+    "description": "Theme-based roadmap story.",
+    "body": "Act as product leader. Horizon: {{horizon}}. Themes: {{themes}}. Commitments vs bets: {{commitments_vs_bets}}. Audience: {{audience}}. Narrative: vision link, themes, sequencing, non-goals, progress measures.",
+    "variables": [
+      {
+        "name": "horizon",
+        "label": "Horizon",
+        "required": true
+      },
+      {
+        "name": "themes",
+        "label": "Themes",
+        "required": true
+      },
+      {
+        "name": "commitments_vs_bets",
+        "label": "Commitments vs bets",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_user_story_map",
+    "title": "User story map slice",
+    "difficulty": "beginner",
+    "tags": [
+      "stories",
+      "mvp"
+    ],
+    "description": "MVP stories and later slices.",
+    "body": "Act as PM. Journey: {{journey}}. Persona: {{persona}}. Activities: {{activities}}. Product: {{product}}. MVP stories with acceptance criteria, later slices, dependencies.",
+    "variables": [
+      {
+        "name": "journey",
+        "label": "Journey",
+        "required": true
+      },
+      {
+        "name": "persona",
+        "label": "Persona",
+        "required": true
+      },
+      {
+        "name": "activities",
+        "label": "Activities",
+        "required": true
+      },
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_metrics_spec",
+    "title": "Product metrics spec",
+    "difficulty": "advanced",
+    "tags": [
+      "metrics",
+      "instrumentation"
+    ],
+    "description": "Input/output metrics and events.",
+    "body": "Act as product analyst partner. Area: {{area}}. Outcome: {{outcome}}. Existing data: {{existing_data}}. Propose north-star candidate, inputs, guardrails, events, dashboard questions. Avoid vanity metrics.",
+    "variables": [
+      {
+        "name": "area",
+        "label": "Area",
+        "required": true
+      },
+      {
+        "name": "outcome",
+        "label": "Outcome",
+        "required": true
+      },
+      {
+        "name": "existing_data",
+        "label": "Existing data",
+        "required": false,
+        "defaultValue": "unknown"
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_launch_checklist",
+    "title": "Feature launch checklist",
+    "difficulty": "beginner",
+    "tags": [
+      "launch",
+      "gtm"
+    ],
+    "description": "Cross-functional launch checklist.",
+    "body": "Act as product ops. Feature: {{feature}}. Launch type: {{launch_type}}. Risks: {{risks}}. Checklist across eng, design, docs, support, marketing, sales, legal, analytics + go/no-go criteria.",
+    "variables": [
+      {
+        "name": "feature",
+        "label": "Feature",
+        "required": true
+      },
+      {
+        "name": "launch_type",
+        "label": "Launch type",
+        "required": false,
+        "defaultValue": "limited beta"
+      },
+      {
+        "name": "risks",
+        "label": "Risks",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_competitive_positioning",
+    "title": "Positioning against competitor",
+    "difficulty": "intermediate",
+    "tags": [
+      "positioning",
+      "competitive"
+    ],
+    "description": "When we win / lose talk tracks.",
+    "body": "Act as product marketer with PM. Product: {{product}}. Competitor: {{competitor}}. Win themes: {{win_themes}}. Loss themes: {{loss_themes}}. Facts: {{facts}}. Positioning: when we win/lose, talk tracks, landmines.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "competitor",
+        "label": "Competitor",
+        "required": true
+      },
+      {
+        "name": "win_themes",
+        "label": "Win themes",
+        "required": true
+      },
+      {
+        "name": "loss_themes",
+        "label": "Loss themes",
+        "required": true
+      },
+      {
+        "name": "facts",
+        "label": "Facts",
+        "required": true
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_pm_retro",
+    "title": "Team retrospective facilitator",
+    "difficulty": "beginner",
+    "tags": [
+      "retro",
+      "process"
+    ],
+    "description": "Blameless retro agenda and prompts.",
+    "body": "Act as agile facilitator. Team: {{team}}. Period: {{period}}. Events: {{events}}. 60-minute retro: agenda, prompts, input methods, action-item template. Blameless.",
+    "variables": [
+      {
+        "name": "team",
+        "label": "Team",
+        "required": true
+      },
+      {
+        "name": "period",
+        "label": "Period",
+        "required": true
+      },
+      {
+        "name": "events",
+        "label": "Events",
+        "required": true
+      }
+    ],
+    "category": "pm"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_lesson_plan",
+    "title": "Lesson plan",
+    "difficulty": "beginner",
+    "tags": [
+      "lesson",
+      "teaching"
+    ],
+    "description": "Timed lesson with checks for understanding.",
+    "body": "Act as instructional designer. Topic: {{topic}}. Learners: {{learners}}. Duration: {{duration}}. Lesson plan: measurable objectives, materials, timed agenda, activities, CFU, homework. A11y: {{a11y_notes}}.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "learners",
+        "label": "Learners",
+        "required": true
+      },
+      {
+        "name": "duration",
+        "label": "Duration",
+        "required": false,
+        "defaultValue": "60 minutes"
+      },
+      {
+        "name": "a11y_notes",
+        "label": "A11y notes",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_explain_simply",
+    "title": "Explain like I'm learning",
+    "difficulty": "beginner",
+    "tags": [
+      "explain",
+      "tutoring"
+    ],
+    "description": "Progressive explanation with practice question.",
+    "body": "Act as a patient tutor. Concept: {{concept}}. Level: {{level}}. Context: {{context}}. Explain plainly, then analogy, then deeper pass, then one practice Q&A. Define jargon.",
+    "variables": [
+      {
+        "name": "concept",
+        "label": "Concept",
+        "required": true
+      },
+      {
+        "name": "level",
+        "label": "Level",
+        "required": false,
+        "defaultValue": "beginner"
+      },
+      {
+        "name": "context",
+        "label": "Context",
+        "required": false,
+        "defaultValue": "general"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_quiz",
+    "title": "Quiz generator",
+    "difficulty": "intermediate",
+    "tags": [
+      "quiz",
+      "assessment"
+    ],
+    "description": "Mixed quiz with answer key.",
+    "body": "Act as assessment designer. Topic: {{topic}}. Objectives: {{objectives}}. {{question_count}} questions (MCQ + short answer), answer key, short rubrics. Difficulty mix: {{difficulty_mix}}. No trick questions.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "objectives",
+        "label": "Objectives",
+        "required": true
+      },
+      {
+        "name": "question_count",
+        "label": "Count",
+        "required": false,
+        "defaultValue": "10"
+      },
+      {
+        "name": "difficulty_mix",
+        "label": "Mix",
+        "required": false,
+        "defaultValue": "easy/medium/hard balanced"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_course_outline",
+    "title": "Course outline",
+    "difficulty": "intermediate",
+    "tags": [
+      "course",
+      "curriculum"
+    ],
+    "description": "Multi-module course with capstone.",
+    "body": "Act as curriculum designer. Course: {{course_name}}. Audience: {{audience}}. Outcome: {{outcome}}. Duration: {{duration}}. Prerequisites: {{prerequisites}}. Modules with outcomes, lessons, practice, capstone brief.",
+    "variables": [
+      {
+        "name": "course_name",
+        "label": "Course name",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "outcome",
+        "label": "Outcome",
+        "required": true
+      },
+      {
+        "name": "duration",
+        "label": "Duration",
+        "required": true
+      },
+      {
+        "name": "prerequisites",
+        "label": "Prerequisites",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_feedback_rubric",
+    "title": "Assignment feedback rubric",
+    "difficulty": "intermediate",
+    "tags": [
+      "rubric",
+      "feedback"
+    ],
+    "description": "Rubric and sample feedback comments.",
+    "body": "Act as TA lead. Assignment: {{assignment}}. Criteria: {{criteria}}. Learners: {{learners}}. 4-level rubric + feedback comment bank (strength + improvement) per criterion.",
+    "variables": [
+      {
+        "name": "assignment",
+        "label": "Assignment",
+        "required": true
+      },
+      {
+        "name": "criteria",
+        "label": "Criteria",
+        "required": true
+      },
+      {
+        "name": "learners",
+        "label": "Learners",
+        "required": true
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_study_plan",
+    "title": "Personal study plan",
+    "difficulty": "beginner",
+    "tags": [
+      "study-plan",
+      "learning"
+    ],
+    "description": "Time-boxed study plan to a goal.",
+    "body": "Act as learning coach. Goal: {{goal}}. Level: {{level}}. Hours/week: {{hours_per_week}}. Deadline: {{deadline}}. Resources: {{resources}}. Week-by-week plan with milestones and progress checks.",
+    "variables": [
+      {
+        "name": "goal",
+        "label": "Goal",
+        "required": true
+      },
+      {
+        "name": "level",
+        "label": "Level",
+        "required": true
+      },
+      {
+        "name": "hours_per_week",
+        "label": "Hours per week",
+        "required": true
+      },
+      {
+        "name": "deadline",
+        "label": "Deadline",
+        "required": true
+      },
+      {
+        "name": "resources",
+        "label": "Resources",
+        "required": false,
+        "defaultValue": "unspecified"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_socratic",
+    "title": "Socratic tutoring prompt",
+    "difficulty": "advanced",
+    "tags": [
+      "socratic",
+      "tutoring"
+    ],
+    "description": "Guiding questions before answers.",
+    "body": "Act as Socratic tutor for {{subject}}. Question: {{question}}. Level: {{level}}. Plan a dialogue tree of guiding questions then a concise answer check. Hint policy: {{hint_policy}}. Never shame mistakes.",
+    "variables": [
+      {
+        "name": "subject",
+        "label": "Subject",
+        "required": true
+      },
+      {
+        "name": "question",
+        "label": "Question",
+        "required": true
+      },
+      {
+        "name": "level",
+        "label": "Level",
+        "required": false,
+        "defaultValue": "intermediate"
+      },
+      {
+        "name": "hint_policy",
+        "label": "Hint policy",
+        "required": false,
+        "defaultValue": "progressive hints"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_edu_workshop_agenda",
+    "title": "Workshop agenda",
+    "difficulty": "intermediate",
+    "tags": [
+      "workshop",
+      "facilitation"
+    ],
+    "description": "Interactive workshop with facilitation notes.",
+    "body": "Act as workshop facilitator. Topic: {{topic}}. Participants: {{participants}}. Duration: {{duration}}. Outcomes: {{outcomes}}. Hybrid constraints: {{hybrid_constraints}}. Timed agenda, activities, materials, facilitator notes.",
+    "variables": [
+      {
+        "name": "topic",
+        "label": "Topic",
+        "required": true
+      },
+      {
+        "name": "participants",
+        "label": "Participants",
+        "required": true
+      },
+      {
+        "name": "duration",
+        "label": "Duration",
+        "required": true
+      },
+      {
+        "name": "outcomes",
+        "label": "Outcomes",
+        "required": true
+      },
+      {
+        "name": "hybrid_constraints",
+        "label": "Hybrid constraints",
+        "required": false,
+        "defaultValue": "in-person only"
+      }
+    ],
+    "category": "education"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_eda_plan",
+    "title": "EDA plan",
+    "difficulty": "intermediate",
+    "tags": [
+      "eda",
+      "analysis"
+    ],
+    "description": "Exploratory analysis plan for a dataset.",
+    "body": "Act as data analyst. Question: {{business_question}}. Dataset: {{dataset}}. Tools: {{tools}}. EDA plan: quality checks, uni/bivariate views, segments, anomalies, deliverables, assumptions.",
+    "variables": [
+      {
+        "name": "business_question",
+        "label": "Business question",
+        "required": true
+      },
+      {
+        "name": "dataset",
+        "label": "Dataset",
+        "required": true
+      },
+      {
+        "name": "tools",
+        "label": "Tools",
+        "required": false,
+        "defaultValue": "SQL and notebooks"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_sql_request",
+    "title": "SQL analysis request",
+    "difficulty": "intermediate",
+    "tags": [
+      "sql",
+      "warehouse"
+    ],
+    "description": "Business question to SQL with assumptions.",
+    "body": "Act as analytics engineer. Question: {{question}}. Schema: {{schema}}. Dialect: {{dialect}}. Write commented SQL + assumptions + validation queries. Missing columns as [NEED COLUMN].",
+    "variables": [
+      {
+        "name": "question",
+        "label": "Question",
+        "required": true
+      },
+      {
+        "name": "schema",
+        "label": "Schema",
+        "required": true
+      },
+      {
+        "name": "dialect",
+        "label": "Dialect",
+        "required": false,
+        "defaultValue": "postgres"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_dashboard_spec",
+    "title": "Dashboard specification",
+    "difficulty": "intermediate",
+    "tags": [
+      "dashboard",
+      "bi"
+    ],
+    "description": "Charts, filters, and metric definitions.",
+    "body": "Act as BI lead. Audience: {{audience}}. Decisions: {{decisions}}. Metrics: {{metrics}}. Tool: {{tool}}. Dashboard spec: pages, charts, filters, definitions, refresh, access. Avoid chartjunk.",
+    "variables": [
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": true
+      },
+      {
+        "name": "decisions",
+        "label": "Decisions",
+        "required": true
+      },
+      {
+        "name": "metrics",
+        "label": "Metrics",
+        "required": true
+      },
+      {
+        "name": "tool",
+        "label": "Tool",
+        "required": false,
+        "defaultValue": "unspecified"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_experiment_analysis",
+    "title": "A/B test analysis outline",
+    "difficulty": "advanced",
+    "tags": [
+      "ab-test",
+      "stats"
+    ],
+    "description": "Analysis outline without fake p-values.",
+    "body": "Act as experiment analyst. Experiment: {{experiment}}. Primary: {{primary_metric}}. Guardrails: {{guardrails}}. Data notes: {{data_notes}}. Outline checks, segments, multiple-comparison caution, decision framework. No fabricated statistics.",
+    "variables": [
+      {
+        "name": "experiment",
+        "label": "Experiment",
+        "required": true
+      },
+      {
+        "name": "primary_metric",
+        "label": "Primary metric",
+        "required": true
+      },
+      {
+        "name": "guardrails",
+        "label": "Guardrails",
+        "required": true
+      },
+      {
+        "name": "data_notes",
+        "label": "Data notes",
+        "required": true
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_metric_definition",
+    "title": "Metric definition sheet",
+    "difficulty": "beginner",
+    "tags": [
+      "metrics",
+      "governance"
+    ],
+    "description": "Metric formula, grain, and caveats.",
+    "body": "Act as analytics governance. Metric: {{metric_name}}. Intent: {{intent}}. Sources: {{sources}}. Definition: formula, grain, window, filters, caveats, owner [OWNER], related metrics.",
+    "variables": [
+      {
+        "name": "metric_name",
+        "label": "Metric name",
+        "required": true
+      },
+      {
+        "name": "intent",
+        "label": "Intent",
+        "required": true
+      },
+      {
+        "name": "sources",
+        "label": "Sources",
+        "required": false,
+        "defaultValue": "TBD"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_anomaly_investigation",
+    "title": "Metric anomaly investigation",
+    "difficulty": "advanced",
+    "tags": [
+      "anomaly",
+      "investigation"
+    ],
+    "description": "Investigation plan for metric spikes/drops.",
+    "body": "Act as data detective. Metric: {{metric}}. Change: {{change}}. Range: {{time_range}}. Context: {{context}}. Plan: data quality, cuts, external factors, root-cause classes, status update template.",
+    "variables": [
+      {
+        "name": "metric",
+        "label": "Metric",
+        "required": true
+      },
+      {
+        "name": "change",
+        "label": "Change",
+        "required": true
+      },
+      {
+        "name": "time_range",
+        "label": "Time range",
+        "required": true
+      },
+      {
+        "name": "context",
+        "label": "Context",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_cohort_analysis",
+    "title": "Cohort analysis brief",
+    "difficulty": "intermediate",
+    "tags": [
+      "cohorts",
+      "retention"
+    ],
+    "description": "Cohort definitions and retention views.",
+    "body": "Act as growth analyst. Product: {{product}}. Behavior: {{behavior}}. Limits: {{limits}}. Brief: cohort definition options, windows, metrics, viz recommendations, pitfalls.",
+    "variables": [
+      {
+        "name": "product",
+        "label": "Product",
+        "required": true
+      },
+      {
+        "name": "behavior",
+        "label": "Behavior",
+        "required": true
+      },
+      {
+        "name": "limits",
+        "label": "Limits",
+        "required": false,
+        "defaultValue": "none known"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_data_exec_summary",
+    "title": "Analytics exec summary",
+    "difficulty": "beginner",
+    "tags": [
+      "exec",
+      "summary"
+    ],
+    "description": "Turn analysis notes into exec summary.",
+    "body": "Act as analytics translator. Notes: {{notes}}. Decision: {{decision}}. Audience: {{audience}}. One-page summary: headline findings, evidence, uncertainties, recommended actions. No new analyses.",
+    "variables": [
+      {
+        "name": "notes",
+        "label": "Notes",
+        "required": true
+      },
+      {
+        "name": "decision",
+        "label": "Decision",
+        "required": true
+      },
+      {
+        "name": "audience",
+        "label": "Audience",
+        "required": false,
+        "defaultValue": "executives"
+      }
+    ],
+    "category": "data_analysis"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_eval_prompt_rubric",
+    "title": "Prompt quality rubric",
+    "difficulty": "intermediate",
+    "tags": [
+      "eval",
+      "rubric"
+    ],
+    "description": "Score a prompt on structure and constraints.",
+    "body": "Act as prompt quality reviewer. Evaluate for {{target_model_family}}. Prompt: {{prompt_text}}. Domain: {{domain}}. Score 1–5 on goal clarity, context, constraints, output format, evaluability. Reasons + rewrites for scores under 4.",
+    "variables": [
+      {
+        "name": "prompt_text",
+        "label": "Prompt text",
+        "required": true
+      },
+      {
+        "name": "target_model_family",
+        "label": "Model family",
+        "required": false,
+        "defaultValue": "general LLM"
+      },
+      {
+        "name": "domain",
+        "label": "Domain",
+        "required": false,
+        "defaultValue": "general"
+      }
+    ],
+    "category": "prompt_evaluation"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_eval_regression_set",
+    "title": "Prompt regression case set",
+    "difficulty": "advanced",
+    "tags": [
+      "regression",
+      "evals"
+    ],
+    "description": "Golden set of inputs and expected traits.",
+    "body": "Act as LLM eval engineer. Purpose: {{purpose}}. Failure modes: {{failure_modes}}. Design {{case_count}} cases with input, expected properties, severity. Include edge and policy-safe adversarial-lite cases.",
+    "variables": [
+      {
+        "name": "purpose",
+        "label": "Purpose",
+        "required": true
+      },
+      {
+        "name": "failure_modes",
+        "label": "Failure modes",
+        "required": true
+      },
+      {
+        "name": "case_count",
+        "label": "Case count",
+        "required": false,
+        "defaultValue": "12"
+      }
+    ],
+    "category": "prompt_evaluation"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_eval_ab_prompt_compare",
+    "title": "Compare two prompts",
+    "difficulty": "intermediate",
+    "tags": [
+      "comparison",
+      "ab"
+    ],
+    "description": "Criteria-based comparison of prompt A vs B.",
+    "body": "Act as prompt evaluator. Task: {{task}}. Prompt A: {{prompt_a}}. Prompt B: {{prompt_b}}. Outputs: {{outputs}}. Compare correctness, specificity, safety, verbosity/cost, robustness. Recommend winner or hybrid. Do not favor length alone.",
+    "variables": [
+      {
+        "name": "task",
+        "label": "Task",
+        "required": true
+      },
+      {
+        "name": "prompt_a",
+        "label": "Prompt A",
+        "required": true
+      },
+      {
+        "name": "prompt_b",
+        "label": "Prompt B",
+        "required": true
+      },
+      {
+        "name": "outputs",
+        "label": "Outputs",
+        "required": false,
+        "defaultValue": "none"
+      }
+    ],
+    "category": "prompt_evaluation"
+  },
+  {
+    "compatibleTools": [
+      "chatgpt",
+      "claude",
+      "gemini"
+    ],
+    "isPublic": true,
+    "id": "tmpl_eval_redteam_checklist",
+    "title": "Prompt red-team checklist",
+    "difficulty": "advanced",
+    "tags": [
+      "red-team",
+      "safety"
+    ],
+    "description": "Defensive stress tests for injection and leakage.",
+    "body": "Act as defensive LLM safety analyst. Purpose: {{purpose}}. Data classes: {{data_classes}}. Constraints: {{constraints}}. Checklist: injection simulations (described, not exploit kits), secret leakage checks, over-refusal risks, logging concerns, mitigations.",
+    "variables": [
+      {
+        "name": "purpose",
+        "label": "Purpose",
+        "required": true
+      },
+      {
+        "name": "data_classes",
+        "label": "Data classes",
+        "required": true
+      },
+      {
+        "name": "constraints",
+        "label": "Constraints",
+        "required": false,
+        "defaultValue": "no offensive exploit code"
+      }
+    ],
+    "category": "prompt_evaluation"
+  }
+]

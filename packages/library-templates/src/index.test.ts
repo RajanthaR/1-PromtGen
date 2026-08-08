@@ -4,12 +4,54 @@ import {
   InMemoryTemplateCatalog,
   TemplateLoaderError,
   fillTemplateVariables,
+  launchTemplateCatalog,
+  launchTemplateCatalogCount,
   seedTemplateCatalog,
   validateTemplateContent,
   type LibraryTemplatesPort,
   type PublicTemplate,
   type SavedPromptDraft,
 } from "./index";
+
+describe("launch template catalog", () => {
+  it("ships 100 original public templates that pass schema validation", () => {
+    expect(launchTemplateCatalogCount).toBe(100);
+    expect(launchTemplateCatalog).toHaveLength(100);
+
+    const validation = validateTemplateContent(launchTemplateCatalog);
+    expect(validation.valid).toBe(true);
+
+    const categories = new Set(launchTemplateCatalog.map((template) => template.category));
+    for (const category of [
+      "content",
+      "copywriting",
+      "email",
+      "seo",
+      "social",
+      "research",
+      "sales",
+      "support",
+      "coding",
+      "pm",
+      "education",
+      "data_analysis",
+      "prompt_evaluation",
+    ]) {
+      expect(categories.has(category)).toBe(true);
+    }
+
+    const ids = launchTemplateCatalog.map((template) => template.id);
+    expect(new Set(ids).size).toBe(100);
+  });
+
+  it("seeds the in-memory catalog from the launch set", async () => {
+    const catalog = new InMemoryTemplateCatalog();
+    await expect(seedTemplateCatalog(catalog, [...launchTemplateCatalog])).resolves.toEqual({
+      seeded: 100,
+    });
+    await expect(catalog.listPublicTemplates()).resolves.toHaveLength(100);
+  });
+});
 
 describe("library-templates public boundary", () => {
   it("keeps public templates readable without user scope", async () => {

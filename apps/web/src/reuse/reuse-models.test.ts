@@ -191,6 +191,11 @@ describe("context reuse state", () => {
 });
 
 describe("template reuse state", () => {
+  it("ships the full launch catalog of 100 public templates", () => {
+    expect(seedTemplates).toHaveLength(100);
+    expect(new Set(seedTemplates.map((template) => template.id)).size).toBe(100);
+  });
+
   it("filters templates by tag, tool, difficulty, and recent use", () => {
     expect(
       filterTemplates(
@@ -199,12 +204,12 @@ describe("template reuse state", () => {
           difficulty: "advanced",
           query: "review",
           recentOnly: false,
-          tag: "coding",
+          tag: "review",
           tool: "claude",
         },
         [],
       ).map((template) => template.id),
-    ).toEqual(["tmpl_code_review"]);
+    ).toEqual(["tmpl_coding_code_review"]);
 
     expect(
       filterTemplates(
@@ -216,32 +221,31 @@ describe("template reuse state", () => {
           tag: "all",
           tool: "all",
         },
-        ["tmpl_support_reply"],
+        ["tmpl_support_reply_general"],
       ).map((template) => template.id),
-    ).toEqual(["tmpl_support_reply"]);
+    ).toEqual(["tmpl_support_reply_general"]);
   });
 
   it("blocks generation when required variables are empty", () => {
-    const template = seedTemplates[0];
+    const template = seedTemplates.find((item) => item.id === "tmpl_content_blog_outline");
 
-    expect(template ? validateTemplateVariables(template, { channel: "email" }) : {}).toEqual({
+    expect(template ? validateTemplateVariables(template, { cta_type: "demo" }) : {}).toEqual({
       audience: "Audience is required.",
-      feature: "Feature is required.",
+      topic: "Topic is required.",
     });
-    expect(template ? generateTemplatePrompt(template, { channel: "email" }) : null).toMatchObject({
+    expect(template ? generateTemplatePrompt(template, { cta_type: "demo" }) : null).toMatchObject({
       prompt: "",
       status: "invalid",
     });
   });
 
   it("generates an editable filled prompt and round trips it to the editor", () => {
-    const template = seedTemplates[0];
+    const template = seedTemplates.find((item) => item.id === "tmpl_content_blog_outline");
     const result = template
       ? generateTemplatePrompt(template, {
           audience: "trial users",
-          channel: "email",
-          cta: "invite a teammate",
-          feature: "team analytics",
+          cta_type: "invite a teammate",
+          topic: "team analytics",
         })
       : null;
 

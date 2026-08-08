@@ -1,3 +1,5 @@
+import { launchTemplateCatalog } from "@promptgen/library-templates/catalog";
+
 import { createEditorDraftUrl } from "../editor/editor-draft";
 import type { EditorMode, TargetModelOption } from "../editor/editor-options";
 
@@ -263,82 +265,24 @@ export const seedContextSnippets: ContextSnippet[] = [
   },
 ];
 
-export const seedTemplates: PromptTemplate[] = [
-  {
-    body: "Act as a lifecycle marketer. Draft a {{channel}} launch message for {{audience}} about {{feature}}. Include the customer problem, the main benefit, one proof point placeholder, and a {{cta}} call to action.",
-    category: "email",
-    compatibleTools: ["chatgpt", "claude", "gemini"],
-    description: "Create a launch message with audience, feature, proof, and CTA.",
-    difficulty: "beginner",
-    id: "tmpl_launch_message",
-    isPublic: true,
-    tags: ["launch", "email", "copy"],
-    title: "Launch message",
-    variables: [
-      { defaultValue: "email", label: "Channel", name: "channel", required: true },
-      { defaultValue: "", label: "Audience", name: "audience", required: true },
-      { defaultValue: "", label: "Feature", name: "feature", required: true },
-      { defaultValue: "book a demo", label: "CTA", name: "cta", required: false },
-    ],
-  },
-  {
-    body: "Act as a product researcher. Synthesize {{source_material}} for {{stakeholder}}. Return themes, supporting evidence, contradictions, open questions, and recommended next research steps. Keep interpretation separate from direct evidence.",
-    category: "research",
-    compatibleTools: ["chatgpt", "claude", "gemini"],
-    description: "Turn notes into evidence-backed themes and follow-up questions.",
-    difficulty: "intermediate",
-    id: "tmpl_research_synthesis",
-    isPublic: true,
-    tags: ["research", "synthesis"],
-    title: "Research synthesis",
-    variables: [
-      { defaultValue: "", label: "Source material", name: "source_material", required: true },
-      { defaultValue: "product team", label: "Stakeholder", name: "stakeholder", required: true },
-    ],
-  },
-  {
-    body: "Act as a support lead. Write a customer reply about {{issue}}. Use a {{tone}} tone, acknowledge the impact, state what is known, list the next step, and avoid promises beyond the confirmed policy.",
-    category: "support",
-    compatibleTools: ["chatgpt", "claude"],
-    description: "Draft a support response that separates facts from promises.",
-    difficulty: "beginner",
-    id: "tmpl_support_reply",
-    isPublic: true,
-    tags: ["support", "customer"],
-    title: "Support reply",
-    variables: [
-      { defaultValue: "", label: "Issue", name: "issue", required: true },
-      { defaultValue: "calm and helpful", label: "Tone", name: "tone", required: false },
-    ],
-  },
-  {
-    body: "Act as an engineering reviewer. Review the proposed change for {{system_area}}. Identify correctness risks, missing tests, accessibility or security concerns, and the smallest follow-up needed before release. Do not rewrite unrelated code.",
-    category: "coding",
-    compatibleTools: ["chatgpt", "claude", "gemini"],
-    description: "Review a focused code change without broadening scope.",
-    difficulty: "advanced",
-    id: "tmpl_code_review",
-    isPublic: true,
-    tags: ["coding", "review"],
-    title: "Focused code review",
-    variables: [{ defaultValue: "", label: "System area", name: "system_area", required: true }],
-  },
-  {
-    body: "Act as a PM. Convert {{input}} into a decision memo for {{audience}}. Include context, options considered, recommendation, risks, non-goals, and the date-sensitive assumptions to verify.",
-    category: "pm",
-    compatibleTools: ["chatgpt", "claude", "gemini"],
-    description: "Create a decision memo with options, risks, and assumptions.",
-    difficulty: "intermediate",
-    id: "tmpl_decision_memo",
-    isPublic: true,
-    tags: ["pm", "decision"],
-    title: "Decision memo",
-    variables: [
-      { defaultValue: "", label: "Input", name: "input", required: true },
-      { defaultValue: "leadership", label: "Audience", name: "audience", required: true },
-    ],
-  },
-];
+/** Launch catalog: 100 original public templates (single source in @promptgen/library-templates). */
+export const seedTemplates: PromptTemplate[] = launchTemplateCatalog.map((template) => ({
+  body: template.body,
+  category: template.category,
+  compatibleTools: [...template.compatibleTools],
+  description: template.description,
+  difficulty: template.difficulty,
+  id: template.id,
+  isPublic: true as const,
+  tags: [...template.tags],
+  title: template.title,
+  variables: template.variables.map((variable) => ({
+    defaultValue: variable.defaultValue ?? "",
+    label: variable.label,
+    name: variable.name,
+    required: variable.required,
+  })),
+}));
 
 export function getLatestLibraryVersion(prompt: LibraryPrompt): LibraryPromptVersion {
   const versions = [...prompt.versions].sort((a, b) => b.versionNumber - a.versionNumber);

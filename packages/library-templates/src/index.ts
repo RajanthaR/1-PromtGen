@@ -129,3 +129,7 @@ export interface PromptLibraryPort extends Pick<
 
 export { PostgresPromptLibraryStore, PromptLibraryError } from "./prompt-library";
 export type { PromptLibraryErrorCode } from "./prompt-library";
+export {
+  launchTemplateCatalog,
+  launchTemplateCatalogCount,
+} from "./launch-catalog";

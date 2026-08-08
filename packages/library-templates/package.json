@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./catalog": "./src/launch-catalog.ts",
+    "./content/launch-catalog.json": "./content/launch-catalog.json"
   },
   "scripts": {
     "lint": "eslint . --max-warnings=0",
